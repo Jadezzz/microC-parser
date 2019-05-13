@@ -1,21 +1,9 @@
-int outside;
-int main(void){
-    int a;
-    int b;
-    int c = 10;
-    {
-        int d;
-        {
-            int g;
-            {
-                float k;
-                {
-                    bool r;
-                    {
-                        void j;
-                    }
-                }
-            }
-        }
+int foo(){
+    int a = 0;
+    if(a > 10){
+        int b = 10;
+    } else {
+        float c = 10;
     }
+    return 0;
 }

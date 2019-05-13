@@ -11,8 +11,11 @@ char buf[BUF_SIZE];
 char string_buf[BUF_SIZE];
 
 
+
 /* This macro is used to record code line */
 #define CONCAT { strncat(buf, yytext, BUF_SIZE - strlen(buf) - 1); }
+
+
 %}
 
 /* Define regular expression label */
