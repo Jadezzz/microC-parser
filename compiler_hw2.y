@@ -124,7 +124,7 @@ type_spec
     ;
 
 fun_decl
-    : type_spec ID LB params RB { insert_symbol($2, "function", $1, ""); } compound_stmt 
+    : type_spec ID LB params RB { insert_symbol($2, "function", $1, ""); } function_compound_stmt 
     | type_spec ID LB params RB SEMICOLON { insert_symbol($2, "function", $1, ""); }
     ;
 
@@ -143,6 +143,9 @@ param
     |
     ;
 
+function_compound_stmt 
+    : LCB content_list RCB
+    ;
 compound_stmt
     : LCB { level++; create_symbol(); }content_list RCB { dump_symbol(); level--; }
     ;
