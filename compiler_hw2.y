@@ -4,6 +4,7 @@ extern int yylineno;
 extern int yylex();
 extern char* yytext;   // Get current token from lex
 extern char buf[256];  // Get current code line from lex
+extern int dump_flag;
 
 /* Symbol table function - you can add new function if needed. */
 int lookup_symbol();
@@ -79,6 +80,7 @@ void yyerror(char*);
 /* Nonterminal with return, which need to sepcify type */
 %type <string> type_spec
 
+
 /* Yacc will start at this nonterminal */
 %start program
 
@@ -124,13 +126,22 @@ type_spec
     ;
 
 fun_decl
-    : type_spec ID LB params RB { insert_symbol($2, "function", $1, ""); } function_compound_stmt 
-    | type_spec ID LB params RB SEMICOLON { insert_symbol($2, "function", $1, ""); }
+    : type_spec ID LB params RB {   insert_symbol($2, "function", $1, attributes_buf); 
+                                    for(int i=0;i<MAX_ATTRI;i++){
+                                        attributes_buf[i] = '\0';
+                                    } 
+                                } function_compound_stmt 
+    | type_spec ID LB params RB SEMICOLON   { 
+                                                insert_symbol($2, "function", $1, attributes_buf); 
+                                                for(int i=0;i<MAX_ATTRI;i++){
+                                                    attributes_buf[i] = '\0';
+                                                }        
+                                            }
     ;
 
 params
     : param_list
-    | VOID
+    | VOID { strcat(attributes_buf, "void"); }
     ;
 
 param_list
@@ -139,15 +150,23 @@ param_list
     ;
 
 param
-    : type_spec ID 
+    : type_spec ID {    
+                        if(attributes_buf[0] == '\0'){
+                            strcat(attributes_buf, $1);
+                        }
+                        else{
+                            strcat(attributes_buf, ", ");
+                            strcat(attributes_buf, $1);
+                        }
+                    }
     |
     ;
 
 function_compound_stmt 
-    : LCB content_list RCB
+    : LCB { level++; create_symbol(); }content_list RCB { dump_flag = 1; level--; }
     ;
 compound_stmt
-    : LCB { level++; create_symbol(); }content_list RCB { dump_symbol(); level--; }
+    : LCB { level++; create_symbol(); }content_list RCB { dump_flag = 1; level--; }
     ;
 
 content_list
@@ -289,38 +308,55 @@ void insert_symbol(const char* name, const char* entry_type,
                   const char* data_type, const char* attributes) {
     //printf("Inserting symbol / %s / %s / %s / %s /\n", name, entry_type, data_type, attributes);
     
-    
-    sym_node_ptr p = calloc(1, sizeof(sym_node));
+    if(!lookup_symbol(name)){
+        sym_node_ptr p = calloc(1, sizeof(sym_node));
 
-    strncpy(p->name, name, MAX_NAME-1);
-    strncpy(p->entry_type, entry_type, 9);
-    strncpy(p->data_type, data_type, 5);
-    p->level = level;
-    strncpy(p->attributes, attributes, MAX_ATTRI-1);
+        strncpy(p->name, name, MAX_NAME-1);
+        strncpy(p->entry_type, entry_type, 9);
+        strncpy(p->data_type, data_type, 5);
+        p->level = level;
+        strncpy(p->attributes, attributes, MAX_ATTRI-1);
 
-    p->next = NIL;
+        p->next = NIL;
 
-    sym_node_ptr pos = SYM_TAB->first;
+        sym_node_ptr pos = SYM_TAB->first;
 
-    // Originally empty
-    if(pos == NIL){
-        SYM_TAB->first = p;
-    }
-
-    // Originally not empty
-    else{
-        while(pos->next != NIL){
-            pos = pos->next;
+        // Originally empty
+        if(pos == NIL){
+            SYM_TAB->first = p;
         }
-        pos->next = p;
-    }
-    
 
-    
+        // Originally not empty
+        else{
+            while(pos->next != NIL){
+                pos = pos->next;
+            }
+            pos->next = p;
+        }
+    }
 
     // printf("Inserted symbol %s done\n", name);
 }
-int lookup_symbol() {}
+int lookup_symbol(char* name) {
+    // Return 0 if no redefined symbol found
+    // Return 1 if redefined symbol found
+
+    sym_tab_ptr cur = SYM_TAB;
+    while(cur != NIL){
+        printf("Lookup %d level...\n", cur->level);
+        sym_node_ptr p = cur->first;
+        while( p != NIL){
+            if(!strcmp(name, p->name)){
+                printf("Redefined!!!!!!\n");
+                return 1;
+            }
+            p = p->next;
+        }
+
+        cur = cur->next;
+    }
+    return 0;
+}
 void dump_symbol() {
 
     printf("\n Dumping symbol table of level: %d\n", SYM_TAB->level);

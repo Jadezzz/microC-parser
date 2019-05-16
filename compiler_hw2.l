@@ -7,12 +7,17 @@
 #define BUF_SIZE 128
 
 extern YYSTYPE yylval; //YYSTYPE
+extern void dump_symbol(void);
+
+
 char buf[BUF_SIZE];
 char string_buf[BUF_SIZE];
-
+int dump_flag=0;
 
 /* This macro is used to record code line */
 #define CONCAT { strncat(buf, yytext, BUF_SIZE - strlen(buf) - 1); }
+	
+
 %}
 
 /* Define regular expression label */
@@ -64,11 +69,6 @@ id			{letter}+({letter}|{digit})*
 ")"		{ CONCAT return(RB); }
 "{"		{ CONCAT return(LCB); }
 "}"		{ CONCAT return(RCB); }
-"}\n" { CONCAT 
-        printf("%d: %s", yylineno, buf); 
-        memset(buf, 0, BUF_SIZE);
-        return(RCB);
-      }
 "["		{ CONCAT return(LSB); }
 "]"		{ CONCAT return(RSB); }
 ","		{ CONCAT return(COMMA); }
@@ -139,7 +139,12 @@ id			{letter}+({letter}|{digit})*
  /* others */
 
 [;]         { CONCAT return(SEMICOLON); }
-[\n]        { printf("%d: %s\n", yylineno, buf); memset(buf, 0, BUF_SIZE); }
+[\n]        { printf("%d: %s\n", yylineno, buf); memset(buf, 0, BUF_SIZE); 
+			  if(dump_flag){
+				  dump_symbol();
+			  }	
+			  dump_flag = 0;
+			}
 [ \t]		{ CONCAT } /* Ignore */
 [^ \t\n] 	{ CONCAT } /* Ignore other charactor sets */
  /* <<EOF>>     {  } */

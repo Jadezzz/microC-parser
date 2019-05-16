@@ -1,20 +1,23 @@
 int outside;
+
+int foo(int a, int b, float c){
+
+}
+
+float kkkkk(float c, float b);
 int main(void){
     int a;
     int b;
     int c = 10;
     {
-        int d;
+        int a;
         {
-            int g;
+            int c;
+            int d;
+            int f;
             {
-                float k;
-                {
-                    bool r;
-                    {
-                        void j;
-                    }
-                }
+                int f;
+                int k;
             }
         }
     }
