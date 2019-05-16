@@ -178,7 +178,7 @@ decl (53)
 var_decl (54)
     on left: 6 7, on right: 4 28
 type_spec (55)
-    on left: 8 9 10 11 12, on right: 6 7 14 15 20
+    on left: 8 9 10 11 12, on right: 6 7 13 14 19
 fun_decl (56)
     on left: 14 15, on right: 5
 $@1 (57)
@@ -393,7 +393,7 @@ State 17
     FLOAT   shift, and go to state 4
     BOOL    shift, and go to state 5
 
-    $default  reduce using rule 21 (param)
+    $default  reduce using rule 20 (param)
 
     type_spec   go to state 29
     params      go to state 30
@@ -541,15 +541,15 @@ State 27
 State 28
 
     8 type_spec: VOID .
-   17 params: VOID .
+   16 params: VOID .
 
-    RB        reduce using rule 17 (params)
+    RB        reduce using rule 16 (params)
     $default  reduce using rule 8 (type_spec)
 
 
 State 29
 
-   20 param: type_spec . ID
+   19 param: type_spec . ID
 
     ID  shift, and go to state 60
 
@@ -564,19 +564,19 @@ State 30
 
 State 31
 
-   16 params: param_list .
-   18 param_list: param_list . COMMA param
+   15 params: param_list .
+   17 param_list: param_list . COMMA param
 
     COMMA  shift, and go to state 62
 
-    $default  reduce using rule 16 (params)
+    $default  reduce using rule 15 (params)
 
 
 State 32
 
-   19 param_list: param .
+   18 param_list: param .
 
-    $default  reduce using rule 19 (param_list)
+    $default  reduce using rule 18 (param_list)
 
 
 State 33
@@ -1022,9 +1022,9 @@ State 59
 
 State 60
 
-   20 param: type_spec ID .
+   19 param: type_spec ID .
 
-    $default  reduce using rule 20 (param)
+    $default  reduce using rule 19 (param)
 
 
 State 61
@@ -1033,15 +1033,14 @@ State 61
    15         | type_spec ID LB params RB . SEMICOLON
 
     SEMICOLON  shift, and go to state 86
+    LCB        shift, and go to state 87
 
-    $default  reduce using rule 13 ($@1)
-
-    $@1  go to state 87
+    function_compound_stmt  go to state 88
 
 
 State 62
 
-   18 param_list: param_list COMMA . param
+   17 param_list: param_list COMMA . param
 
     STRING  shift, and go to state 1
     VOID    shift, and go to state 2
@@ -1049,10 +1048,10 @@ State 62
     FLOAT   shift, and go to state 4
     BOOL    shift, and go to state 5
 
-    $default  reduce using rule 21 (param)
+    $default  reduce using rule 20 (param)
 
     type_spec  go to state 29
-    param      go to state 88
+    param      go to state 89
 
 
 State 63
@@ -1333,7 +1332,7 @@ State 71
    75 arg_list: arg_list . COMMA expr
    77 args: arg_list .
 
-    COMMA  shift, and go to state 89
+    COMMA  shift, and go to state 90
 
     $default  reduce using rule 77 (args)
 
@@ -1342,7 +1341,7 @@ State 72
 
    67 expr: ID LB args . RB
 
-    RB  shift, and go to state 90
+    RB  shift, and go to state 91
 
 
 State 73
@@ -1734,25 +1733,25 @@ State 85
 
 State 86
 
-   15 fun_decl: type_spec ID LB params RB SEMICOLON .
+   14 fun_decl: type_spec ID LB params RB SEMICOLON .
 
-    $default  reduce using rule 15 (fun_decl)
+    $default  reduce using rule 14 (fun_decl)
 
 
 State 87
 
    14 fun_decl: type_spec ID LB params RB $@1 . function_compound_stmt
 
-    LCB  shift, and go to state 91
+    $default  reduce using rule 21 ($@1)
 
     function_compound_stmt  go to state 92
 
 
 State 88
 
-   18 param_list: param_list COMMA param .
+   13 fun_decl: type_spec ID LB params RB function_compound_stmt .
 
-    $default  reduce using rule 18 (param_list)
+    $default  reduce using rule 13 (fun_decl)
 
 
 State 89
@@ -1785,14 +1784,16 @@ State 91
 
     $default  reduce using rule 22 ($@2)
 
-    $@2  go to state 94
+    $default  reduce using rule 66 (expr)
 
 
 State 92
 
    14 fun_decl: type_spec ID LB params RB $@1 function_compound_stmt .
 
-    $default  reduce using rule 14 (fun_decl)
+    $default  reduce using rule 26 (content_list)
+
+    content_list  go to state 94
 
 
 State 93
@@ -1879,7 +1880,7 @@ State 95
     expr           go to state 112
 
 
-State 96
+State 95
 
    36 print_stmt: PRINT . LB ID RB
    37           | PRINT . LB STRING RB
@@ -1887,7 +1888,7 @@ State 96
     LB  shift, and go to state 113
 
 
-State 97
+State 96
 
    39 if_stmt: IF . LB expr RB stmt
    40        | IF . LB expr RB stmt ELSE stmt
@@ -1895,11 +1896,20 @@ State 97
     LB  shift, and go to state 114
 
 
-State 98
+State 97
 
    38 while_stmt: WHILE . LB expr RB stmt
 
     LB  shift, and go to state 115
+
+
+State 98
+
+   24 compound_stmt: LCB . $@2 content_list RCB
+
+    $default  reduce using rule 23 ($@2)
+
+    $@2  go to state 115
 
 
 State 99
@@ -2000,7 +2010,7 @@ State 110
 
    32 stmt: if_stmt .
 
-    $default  reduce using rule 32 (stmt)
+    $default  reduce using rule 33 (stmt)
 
 
 State 111
@@ -2319,9 +2329,17 @@ State 130
    39 if_stmt: IF LB expr RB . stmt
    40        | IF LB expr RB . stmt ELSE stmt
 
-    PRINT    shift, and go to state 96
-    IF       shift, and go to state 97
-    WHILE    shift, and go to state 98
+    $default  reduce using rule 35 (print_stmt)
+
+
+State 129
+
+   38 if_stmt: IF LB expr RB . stmt
+   39        | IF LB expr RB . stmt ELSE stmt
+
+    PRINT    shift, and go to state 95
+    IF       shift, and go to state 96
+    WHILE    shift, and go to state 97
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
     LB       shift, and go to state 20
@@ -2347,9 +2365,9 @@ State 131
 
    38 while_stmt: WHILE LB expr RB . stmt
 
-    PRINT    shift, and go to state 96
-    IF       shift, and go to state 97
-    WHILE    shift, and go to state 98
+    PRINT    shift, and go to state 95
+    IF       shift, and go to state 96
+    WHILE    shift, and go to state 97
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
     LB       shift, and go to state 20
@@ -2399,9 +2417,14 @@ State 135
 
    40 if_stmt: IF LB expr RB stmt ELSE . stmt
 
-    PRINT    shift, and go to state 96
-    IF       shift, and go to state 97
-    WHILE    shift, and go to state 98
+
+State 134
+
+   39 if_stmt: IF LB expr RB stmt ELSE . stmt
+
+    PRINT    shift, and go to state 95
+    IF       shift, and go to state 96
+    WHILE    shift, and go to state 97
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
     LB       shift, and go to state 20
