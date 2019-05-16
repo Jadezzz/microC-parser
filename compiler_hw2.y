@@ -1,16 +1,23 @@
 /*	Definition section */
 %{
+
+#define BUF_SIZE 128
 extern int yylineno;
 extern int yylex();
 extern char* yytext;   // Get current token from lex
-extern char buf[256];  // Get current code line from lex
+extern char buf[BUF_SIZE];  // Get current code line from lex
 extern int dump_flag;
+extern int error_flag;
+int syntax_error_flag = 0;
 
+char err_msg[128] = {'\0'};
 /* Symbol table function - you can add new function if needed. */
 int lookup_symbol();
 void create_symbol();
 void insert_symbol();
 void dump_symbol();
+void display_dump();
+void check_symbol(const char*);
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -25,8 +32,8 @@ char attributes_buf[MAX_ATTRI] = {'\0'};
 
 struct symbol_node{
     char name[MAX_NAME];
-    char entry_type[10];
-    char data_type[6];
+    char entry_type[12];
+    char data_type[10];
     int level;
     char attributes[MAX_ATTRI];
     struct symbol_node * next;
@@ -45,6 +52,7 @@ typedef struct symbol_table sym_tab;
 typedef struct symbol_table * sym_tab_ptr;
 
 sym_tab_ptr SYM_TAB = NIL;
+sym_tab_ptr DUMP_SYM = NIL;
 int level = 0;
 
 void yyerror(char*);
@@ -113,8 +121,8 @@ decl
     ;
 
 var_decl
-    : type_spec ID SEMICOLON { insert_symbol($2, "variable", $1, ""); }
-    | type_spec ID ASGN expr SEMICOLON { insert_symbol($2, "variable", $1, ""); }
+    : type_spec ID SEMICOLON { insert_symbol($2, "variable", $1, "", 0); }
+    | type_spec ID ASGN expr SEMICOLON { insert_symbol($2, "variable", $1, "", 0); }
     ;
 
 type_spec
@@ -126,17 +134,16 @@ type_spec
     ;
 
 fun_decl
-    : type_spec ID LB params RB {   insert_symbol($2, "function", $1, attributes_buf); 
+    : type_spec ID LB { level++; create_symbol(); } params RB { insert_symbol($2, "function", $1, attributes_buf, 1); 
                                     for(int i=0;i<MAX_ATTRI;i++){
                                         attributes_buf[i] = '\0';
                                     } 
-                                } function_compound_stmt 
-    | type_spec ID LB params RB SEMICOLON   { 
-                                                insert_symbol($2, "function", $1, attributes_buf); 
-                                                for(int i=0;i<MAX_ATTRI;i++){
-                                                    attributes_buf[i] = '\0';
-                                                }        
-                                            }
+                                } fun_decl_cont
+    ;
+
+fun_decl_cont
+    : SEMICOLON
+    | function_compound_stmt
     ;
 
 params
@@ -151,6 +158,7 @@ param_list
 
 param
     : type_spec ID {    
+                        insert_symbol($2, "parameter", $1, "", 0);
                         if(attributes_buf[0] == '\0'){
                             strcat(attributes_buf, $1);
                         }
@@ -162,12 +170,14 @@ param
     |
     ;
 
-function_compound_stmt 
-    : LCB { level++; create_symbol(); }content_list RCB { dump_flag = 1; level--; }
-    ;
+
 compound_stmt
-    : LCB { level++; create_symbol(); }content_list RCB { dump_flag = 1; level--; }
+    : LCB { level++; create_symbol(); }content_list RCB { dump_symbol(); level--; }
     ;
+
+function_compound_stmt
+    : LCB content_list RCB { dump_symbol(); level--; }
+
 
 content_list
     : content_list content
@@ -188,7 +198,7 @@ stmt
     ;
 
 print_stmt
-    : PRINT LB ID RB
+    : PRINT LB ID RB { check_symbol($3); }
     | PRINT LB STRING RB
     ;
 
@@ -196,20 +206,27 @@ while_stmt
     : WHILE LB expr RB stmt
 
 if_stmt
-    : IF LB expr RB stmt %prec IFX
-    | IF LB expr RB stmt ELSE stmt
+    : IF LB expr RB compound_stmt
+    | IF LB expr RB compound_stmt else_if_stmt
+
+else_if_stmt
+    : ELSE IF LB expr RB compound_stmt else_if_stmt
+    | else_stmt
+
+else_stmt
+    : ELSE compound_stmt
 
 return_stmt
     : RET SEMICOLON
     | RET expr SEMICOLON
 
 expr
-    : ID ASGN expr
-    | ID ADDASGN expr
-    | ID SUBASGN expr
-    | ID MULASGN expr
-    | ID DIVASGN expr 
-    | ID MODASGN expr
+    : ID ASGN expr { check_symbol($1); }
+    | ID ADDASGN expr { check_symbol($1); }
+    | ID SUBASGN expr { check_symbol($1); }
+    | ID MULASGN expr { check_symbol($1); }
+    | ID DIVASGN expr { check_symbol($1); }
+    | ID MODASGN expr { check_symbol($1); }
     | expr OR expr
     | expr AND expr
     | expr EQ expr
@@ -227,8 +244,8 @@ expr
     | expr INC
     | expr DEC
     | LB expr RB
-    | ID 
-    | ID LB args RB
+    | ID { check_symbol($1); }
+    | ID LB args RB 
     | TRUE
     | FALSE
     | I_CONST
@@ -256,23 +273,34 @@ int main(int argc, char** argv)
 {
     create_symbol();
     yylineno = 0;
-
-
-
     yyparse();
-	printf("\nTotal lines: %d \n",yylineno);
+	
+    if(!syntax_error_flag){
+        dump_symbol();
+        display_dump();
 
-    dump_symbol();
-
+        printf("\nTotal lines: %d \n",yylineno);
+    }
+    
     return 0;
 }
 
 void yyerror(char *s)
 {
-    printf("\n|-----------------------------------------------|\n");
-    printf("| Error found in line %d: %s\n", yylineno + 1, buf);
-    printf("| %s", s);
-    printf("\n|-----------------------------------------------|\n\n");
+    if(!strcmp(s, "syntax error")){
+        printf("%d: %s\n", yylineno + 1, buf); 
+        printf("\n|-----------------------------------------------|\n");
+        printf("| Error found in line %d: %s\n", yylineno + 1, buf);
+        printf("| %s", s);
+        printf("\n|-----------------------------------------------|\n\n");
+
+        syntax_error_flag = 1;
+    }
+    else{
+        strncpy(err_msg, s, strlen(s));
+        error_flag = 1;
+    }
+    
 }
 
 void create_symbol() {
@@ -302,28 +330,34 @@ void create_symbol() {
         SYM_TAB = p;
     }
 
-    printf("Create symbol table of level: %d\n", p->level);
+    //printf("Create symbol table of level: %d\n", p->level);
 }
 void insert_symbol(const char* name, const char* entry_type, 
-                  const char* data_type, const char* attributes) {
-    //printf("Inserting symbol / %s / %s / %s / %s /\n", name, entry_type, data_type, attributes);
+                  const char* data_type, const char* attributes, const int prev) {
     
-    if(!lookup_symbol(name)){
+    
+    if(!lookup_symbol(name, level-prev)){
+        //printf("Inserting symbol / %s / %s / %s / %s /\n", name, entry_type, data_type, attributes);
         sym_node_ptr p = calloc(1, sizeof(sym_node));
 
         strncpy(p->name, name, MAX_NAME-1);
-        strncpy(p->entry_type, entry_type, 9);
-        strncpy(p->data_type, data_type, 5);
-        p->level = level;
+        strncpy(p->entry_type, entry_type, 11);
+        strncpy(p->data_type, data_type, 9);
+        p->level = level - prev;
         strncpy(p->attributes, attributes, MAX_ATTRI-1);
 
         p->next = NIL;
-
-        sym_node_ptr pos = SYM_TAB->first;
+        int prev_level = prev;
+        sym_tab_ptr tab = SYM_TAB;
+        while(prev_level){
+            tab = tab->next;
+            prev_level --;
+        }
+        sym_node_ptr pos = tab->first;
 
         // Originally empty
         if(pos == NIL){
-            SYM_TAB->first = p;
+            tab->first = p;
         }
 
         // Originally not empty
@@ -337,17 +371,44 @@ void insert_symbol(const char* name, const char* entry_type,
 
     // printf("Inserted symbol %s done\n", name);
 }
-int lookup_symbol(char* name) {
-    // Return 0 if no redefined symbol found
-    // Return 1 if redefined symbol found
 
+void check_symbol(const char* name){
+
+    int found = 0;
     sym_tab_ptr cur = SYM_TAB;
     while(cur != NIL){
-        printf("Lookup %d level...\n", cur->level);
+        //printf("Lookup %d level...\n", cur->level);
         sym_node_ptr p = cur->first;
         while( p != NIL){
             if(!strcmp(name, p->name)){
-                printf("Redefined!!!!!!\n");
+                found = 1;
+            }
+            p = p->next;
+        }
+
+        cur = cur->next;
+    }
+    if(!found){
+        char msg[128] = {'\0'};
+        sprintf(msg, "Undeclared variable %s", name);
+        yyerror(msg);
+    }
+
+}
+
+int lookup_symbol(const char* name, const int lvl) {
+    // Return 0 if symbol not found
+    // Return 1 if symbol found
+
+    sym_tab_ptr cur = SYM_TAB;
+    while(cur != NIL){
+        //printf("Lookup %d level...\n", cur->level);
+        sym_node_ptr p = cur->first;
+        while( p != NIL){
+            if(!strcmp(name, p->name) && lvl==p->level){
+                char msg[128] = {'\0'};
+                sprintf(msg, "Redeclared variable %s", name);
+                yyerror(msg);
                 return 1;
             }
             p = p->next;
@@ -362,10 +423,17 @@ void dump_symbol() {
     printf("\n Dumping symbol table of level: %d\n", SYM_TAB->level);
 
     // Symbol table from head
-    sym_tab_ptr del_sym_tab = SYM_TAB;
-    sym_node_ptr p = del_sym_tab->first;
+    DUMP_SYM = SYM_TAB;    
+    dump_flag = 1;
+    // Remove symbol table from head
+    SYM_TAB = SYM_TAB->next;
+
+}
+
+void display_dump(){
+    sym_node_ptr p = DUMP_SYM->first;
     if(p == NIL){
-        printf("Empty symbol table!\n");
+        // printf("Empty symbol table!\n");
     }
 
     else{
@@ -387,9 +455,11 @@ void dump_symbol() {
             free(del_node);
             index ++; 
         }
+
+        printf("\n");
     }
-    
-    // Remove symbol table from head
-    SYM_TAB = SYM_TAB->next;
-    free(del_sym_tab);
+
+    free(DUMP_SYM);
+    DUMP_SYM = NIL;
+    dump_flag = 0;
 }

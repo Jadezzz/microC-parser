@@ -1,25 +1,11 @@
-int outside;
 
-int foo(int a, int b, float c){
+int main(){
+    int a = 0;
+    float b = 0;
 
-}
-
-float kkkkk(float c, float b);
-int main(void){
-    int a;
-    int b;
-    int c = 10;
     {
-        int a;
-        {
-            int c;
-            int d;
-            int f;
-            {
-                int f;
-                int k;
-            }
-        }
+        int c = 100;
     }
+    c = 10;
     return 0;
 }

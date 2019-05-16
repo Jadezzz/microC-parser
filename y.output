@@ -3,6 +3,7 @@ Terminals unused in grammar
    FOR
    LSB
    RSB
+   IFX
 
 
 Grammar
@@ -28,137 +29,144 @@ Grammar
 
    13 $@1: %empty
 
-   14 fun_decl: type_spec ID LB params RB $@1 function_compound_stmt
-   15         | type_spec ID LB params RB SEMICOLON
+   14 $@2: %empty
 
-   16 params: param_list
-   17       | VOID
+   15 fun_decl: type_spec ID LB $@1 params RB $@2 fun_decl_cont
 
-   18 param_list: param_list COMMA param
-   19           | param
+   16 fun_decl_cont: SEMICOLON
+   17              | function_compound_stmt
 
-   20 param: type_spec ID
-   21      | %empty
+   18 params: param_list
+   19       | VOID
 
-   22 $@2: %empty
+   20 param_list: param_list COMMA param
+   21           | param
 
-   23 function_compound_stmt: LCB $@2 content_list RCB
+   22 param: type_spec ID
+   23      | %empty
 
    24 $@3: %empty
 
    25 compound_stmt: LCB $@3 content_list RCB
 
-   26 content_list: content_list content
-   27             | %empty
+   26 function_compound_stmt: LCB content_list RCB
 
-   28 content: var_decl
-   29        | stmt
+   27 content_list: content_list content
+   28             | %empty
 
-   30 stmt: expr SEMICOLON
-   31     | compound_stmt
-   32     | if_stmt
-   33     | while_stmt
-   34     | return_stmt
-   35     | print_stmt SEMICOLON
+   29 content: var_decl
+   30        | stmt
 
-   36 print_stmt: PRINT LB ID RB
-   37           | PRINT LB STRING RB
+   31 stmt: expr SEMICOLON
+   32     | compound_stmt
+   33     | if_stmt
+   34     | while_stmt
+   35     | return_stmt
+   36     | print_stmt SEMICOLON
 
-   38 while_stmt: WHILE LB expr RB stmt
+   37 print_stmt: PRINT LB ID RB
+   38           | PRINT LB STRING RB
 
-   39 if_stmt: IF LB expr RB stmt
-   40        | IF LB expr RB stmt ELSE stmt
+   39 while_stmt: WHILE LB expr RB stmt
 
-   41 return_stmt: RET SEMICOLON
-   42            | RET expr SEMICOLON
+   40 if_stmt: IF LB expr RB compound_stmt
+   41        | IF LB expr RB compound_stmt else_if_stmt
 
-   43 expr: ID ASGN expr
-   44     | ID ADDASGN expr
-   45     | ID SUBASGN expr
-   46     | ID MULASGN expr
-   47     | ID DIVASGN expr
-   48     | ID MODASGN expr
-   49     | expr OR expr
-   50     | expr AND expr
-   51     | expr EQ expr
-   52     | expr NE expr
-   53     | expr LTE expr
-   54     | expr LT expr
-   55     | expr MTE expr
-   56     | expr MT expr
-   57     | expr ADD expr
-   58     | expr SUB expr
-   59     | expr MUL expr
-   60     | expr DIV expr
-   61     | expr MOD expr
-   62     | NOT expr
-   63     | expr INC
-   64     | expr DEC
-   65     | LB expr RB
-   66     | ID
-   67     | ID LB args RB
-   68     | TRUE
-   69     | FALSE
-   70     | I_CONST
-   71     | F_CONST
-   72     | SUB I_CONST
-   73     | SUB F_CONST
-   74     | STRING
+   42 else_if_stmt: ELSE IF LB expr RB compound_stmt else_if_stmt
+   43             | else_stmt
 
-   75 arg_list: arg_list COMMA expr
-   76         | expr
+   44 else_stmt: ELSE compound_stmt
 
-   77 args: arg_list
-   78     | %empty
+   45 return_stmt: RET SEMICOLON
+   46            | RET expr SEMICOLON
+
+   47 expr: ID ASGN expr
+   48     | ID ADDASGN expr
+   49     | ID SUBASGN expr
+   50     | ID MULASGN expr
+   51     | ID DIVASGN expr
+   52     | ID MODASGN expr
+   53     | expr OR expr
+   54     | expr AND expr
+   55     | expr EQ expr
+   56     | expr NE expr
+   57     | expr LTE expr
+   58     | expr LT expr
+   59     | expr MTE expr
+   60     | expr MT expr
+   61     | expr ADD expr
+   62     | expr SUB expr
+   63     | expr MUL expr
+   64     | expr DIV expr
+   65     | expr MOD expr
+   66     | NOT expr
+   67     | expr INC
+   68     | expr DEC
+   69     | LB expr RB
+   70     | ID
+   71     | ID LB args RB
+   72     | TRUE
+   73     | FALSE
+   74     | I_CONST
+   75     | F_CONST
+   76     | SUB I_CONST
+   77     | SUB F_CONST
+   78     | STRING
+
+   79 arg_list: arg_list COMMA expr
+   80         | expr
+
+   81 args: arg_list
+   82     | %empty
 
 
 Terminals, with rules where they appear
 
 $end (0) 0
 error (256)
-PRINT (258) 36 37
-IF (259) 39 40
-ELSE (260) 40
+PRINT (258) 37 38
+IF (259) 40 41 42
+ELSE (260) 42 44
 FOR (261)
-WHILE (262) 38
-SEMICOLON (263) 6 7 15 30 35 41 42
-ADD (264) 57
-SUB (265) 58 72 73
-MUL (266) 59
-DIV (267) 60
-MOD (268) 61
-INC (269) 63
-DEC (270) 64
-MT (271) 56
-LT (272) 54
-MTE (273) 55
-LTE (274) 53
-EQ (275) 51
-NE (276) 52
-ASGN (277) 7 43
-ADDASGN (278) 44
-SUBASGN (279) 45
-MULASGN (280) 46
-DIVASGN (281) 47
-MODASGN (282) 48
-AND (283) 50
-OR (284) 49
-NOT (285) 62
-LB (286) 14 15 36 37 38 39 40 65 67
-RB (287) 14 15 36 37 38 39 40 65 67
-LCB (288) 23 25
-RCB (289) 23 25
+WHILE (262) 39
+SEMICOLON (263) 6 7 16 31 36 45 46
+ADD (264) 61
+SUB (265) 62 76 77
+MUL (266) 63
+DIV (267) 64
+MOD (268) 65
+INC (269) 67
+DEC (270) 68
+MT (271) 60
+LT (272) 58
+MTE (273) 59
+LTE (274) 57
+EQ (275) 55
+NE (276) 56
+ASGN (277) 7 47
+ADDASGN (278) 48
+SUBASGN (279) 49
+MULASGN (280) 50
+DIVASGN (281) 51
+MODASGN (282) 52
+AND (283) 54
+OR (284) 53
+NOT (285) 66
+LB (286) 15 37 38 39 40 41 42 69 71
+RB (287) 15 37 38 39 40 41 42 69 71
+LCB (288) 25 26
+RCB (289) 25 26
 LSB (290)
 RSB (291)
-COMMA (292) 18 75
-TRUE (293) 68
-FALSE (294) 69
-RET (295) 41 42
-I_CONST (296) 70 72
-F_CONST (297) 71 73
-STRING (298) 12 37 74
-ID (299) 6 7 14 15 20 36 43 44 45 46 47 48 66 67
-VOID (300) 8 17
+COMMA (292) 20 79
+TRUE (293) 72
+FALSE (294) 73
+RET (295) 45 46
+I_CONST (296) 74 76
+F_CONST (297) 75 77
+STRING (298) 12 38 78
+ID (299) 6 7 15 22 37 47 48 49 50 51 52 70 71
+VOID (300) 8 19
 INT (301) 10
 FLOAT (302) 11
 BOOL (303) 9
@@ -176,50 +184,56 @@ decl_list (52)
 decl (53)
     on left: 4 5, on right: 2 3
 var_decl (54)
-    on left: 6 7, on right: 4 28
+    on left: 6 7, on right: 4 29
 type_spec (55)
-    on left: 8 9 10 11 12, on right: 6 7 14 15 20
+    on left: 8 9 10 11 12, on right: 6 7 15 22
 fun_decl (56)
-    on left: 14 15, on right: 5
+    on left: 15, on right: 5
 $@1 (57)
-    on left: 13, on right: 14
-params (58)
-    on left: 16 17, on right: 14 15
-param_list (59)
-    on left: 18 19, on right: 16 18
-param (60)
-    on left: 20 21, on right: 18 19
-function_compound_stmt (61)
-    on left: 23, on right: 14
-$@2 (62)
-    on left: 22, on right: 23
+    on left: 13, on right: 15
+$@2 (58)
+    on left: 14, on right: 15
+fun_decl_cont (59)
+    on left: 16 17, on right: 15
+params (60)
+    on left: 18 19, on right: 15
+param_list (61)
+    on left: 20 21, on right: 18 20
+param (62)
+    on left: 22 23, on right: 20 21
 compound_stmt (63)
-    on left: 25, on right: 31
+    on left: 25, on right: 32 40 41 42 44
 $@3 (64)
     on left: 24, on right: 25
-content_list (65)
-    on left: 26 27, on right: 23 25 26
-content (66)
-    on left: 28 29, on right: 26
-stmt (67)
-    on left: 30 31 32 33 34 35, on right: 29 38 39 40
-print_stmt (68)
-    on left: 36 37, on right: 35
-while_stmt (69)
-    on left: 38, on right: 33
-if_stmt (70)
-    on left: 39 40, on right: 32
-return_stmt (71)
-    on left: 41 42, on right: 34
-expr (72)
-    on left: 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60
-    61 62 63 64 65 66 67 68 69 70 71 72 73 74, on right: 7 30 38 39
-    40 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61
-    62 63 64 65 75 76
-arg_list (73)
-    on left: 75 76, on right: 75 77
-args (74)
-    on left: 77 78, on right: 67
+function_compound_stmt (65)
+    on left: 26, on right: 17
+content_list (66)
+    on left: 27 28, on right: 25 26 27
+content (67)
+    on left: 29 30, on right: 27
+stmt (68)
+    on left: 31 32 33 34 35 36, on right: 30 39
+print_stmt (69)
+    on left: 37 38, on right: 36
+while_stmt (70)
+    on left: 39, on right: 34
+if_stmt (71)
+    on left: 40 41, on right: 33
+else_if_stmt (72)
+    on left: 42 43, on right: 41 42
+else_stmt (73)
+    on left: 44, on right: 43
+return_stmt (74)
+    on left: 45 46, on right: 35
+expr (75)
+    on left: 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64
+    65 66 67 68 69 70 71 72 73 74 75 76 77 78, on right: 7 31 39 40
+    41 42 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64
+    65 66 67 68 69 79 80
+arg_list (76)
+    on left: 79 80, on right: 79 81
+args (77)
+    on left: 81 82, on right: 71
 
 
 State 0
@@ -319,8 +333,7 @@ State 10
 
     6 var_decl: type_spec . ID SEMICOLON
     7         | type_spec . ID ASGN expr SEMICOLON
-   14 fun_decl: type_spec . ID LB params RB $@1 function_compound_stmt
-   15         | type_spec . ID LB params RB SEMICOLON
+   15 fun_decl: type_spec . ID LB $@1 params RB $@2 fun_decl_cont
 
     ID  shift, and go to state 14
 
@@ -350,8 +363,7 @@ State 14
 
     6 var_decl: type_spec ID . SEMICOLON
     7         | type_spec ID . ASGN expr SEMICOLON
-   14 fun_decl: type_spec ID . LB params RB $@1 function_compound_stmt
-   15         | type_spec ID . LB params RB SEMICOLON
+   15 fun_decl: type_spec ID . LB $@1 params RB $@2 fun_decl_cont
 
     SEMICOLON  shift, and go to state 15
     ASGN       shift, and go to state 16
@@ -384,35 +396,25 @@ State 16
 
 State 17
 
-   14 fun_decl: type_spec ID LB . params RB $@1 function_compound_stmt
-   15         | type_spec ID LB . params RB SEMICOLON
+   15 fun_decl: type_spec ID LB . $@1 params RB $@2 fun_decl_cont
 
-    STRING  shift, and go to state 1
-    VOID    shift, and go to state 28
-    INT     shift, and go to state 3
-    FLOAT   shift, and go to state 4
-    BOOL    shift, and go to state 5
+    $default  reduce using rule 13 ($@1)
 
-    $default  reduce using rule 21 (param)
-
-    type_spec   go to state 29
-    params      go to state 30
-    param_list  go to state 31
-    param       go to state 32
+    $@1  go to state 28
 
 
 State 18
 
-   72 expr: SUB . I_CONST
-   73     | SUB . F_CONST
+   76 expr: SUB . I_CONST
+   77     | SUB . F_CONST
 
-    I_CONST  shift, and go to state 33
-    F_CONST  shift, and go to state 34
+    I_CONST  shift, and go to state 29
+    F_CONST  shift, and go to state 30
 
 
 State 19
 
-   62 expr: NOT . expr
+   66 expr: NOT . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -424,12 +426,12 @@ State 19
     STRING   shift, and go to state 25
     ID       shift, and go to state 26
 
-    expr  go to state 35
+    expr  go to state 31
 
 
 State 20
 
-   65 expr: LB . expr RB
+   69 expr: LB . expr RB
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -441,223 +443,234 @@ State 20
     STRING   shift, and go to state 25
     ID       shift, and go to state 26
 
-    expr  go to state 36
+    expr  go to state 32
 
 
 State 21
 
-   68 expr: TRUE .
+   72 expr: TRUE .
 
-    $default  reduce using rule 68 (expr)
+    $default  reduce using rule 72 (expr)
 
 
 State 22
 
-   69 expr: FALSE .
+   73 expr: FALSE .
 
-    $default  reduce using rule 69 (expr)
+    $default  reduce using rule 73 (expr)
 
 
 State 23
 
-   70 expr: I_CONST .
-
-    $default  reduce using rule 70 (expr)
-
-
-State 24
-
-   71 expr: F_CONST .
-
-    $default  reduce using rule 71 (expr)
-
-
-State 25
-
-   74 expr: STRING .
+   74 expr: I_CONST .
 
     $default  reduce using rule 74 (expr)
 
 
+State 24
+
+   75 expr: F_CONST .
+
+    $default  reduce using rule 75 (expr)
+
+
+State 25
+
+   78 expr: STRING .
+
+    $default  reduce using rule 78 (expr)
+
+
 State 26
 
-   43 expr: ID . ASGN expr
-   44     | ID . ADDASGN expr
-   45     | ID . SUBASGN expr
-   46     | ID . MULASGN expr
-   47     | ID . DIVASGN expr
-   48     | ID . MODASGN expr
-   66     | ID .
-   67     | ID . LB args RB
+   47 expr: ID . ASGN expr
+   48     | ID . ADDASGN expr
+   49     | ID . SUBASGN expr
+   50     | ID . MULASGN expr
+   51     | ID . DIVASGN expr
+   52     | ID . MODASGN expr
+   70     | ID .
+   71     | ID . LB args RB
 
-    ASGN     shift, and go to state 37
-    ADDASGN  shift, and go to state 38
-    SUBASGN  shift, and go to state 39
-    MULASGN  shift, and go to state 40
-    DIVASGN  shift, and go to state 41
-    MODASGN  shift, and go to state 42
-    LB       shift, and go to state 43
+    ASGN     shift, and go to state 33
+    ADDASGN  shift, and go to state 34
+    SUBASGN  shift, and go to state 35
+    MULASGN  shift, and go to state 36
+    DIVASGN  shift, and go to state 37
+    MODASGN  shift, and go to state 38
+    LB       shift, and go to state 39
 
-    $default  reduce using rule 66 (expr)
+    $default  reduce using rule 70 (expr)
 
 
 State 27
 
     7 var_decl: type_spec ID ASGN expr . SEMICOLON
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
 
-    SEMICOLON  shift, and go to state 44
-    ADD        shift, and go to state 45
-    SUB        shift, and go to state 46
-    MUL        shift, and go to state 47
-    DIV        shift, and go to state 48
-    MOD        shift, and go to state 49
-    INC        shift, and go to state 50
-    DEC        shift, and go to state 51
-    MT         shift, and go to state 52
-    LT         shift, and go to state 53
-    MTE        shift, and go to state 54
-    LTE        shift, and go to state 55
-    EQ         shift, and go to state 56
-    NE         shift, and go to state 57
-    AND        shift, and go to state 58
-    OR         shift, and go to state 59
+    SEMICOLON  shift, and go to state 40
+    ADD        shift, and go to state 41
+    SUB        shift, and go to state 42
+    MUL        shift, and go to state 43
+    DIV        shift, and go to state 44
+    MOD        shift, and go to state 45
+    INC        shift, and go to state 46
+    DEC        shift, and go to state 47
+    MT         shift, and go to state 48
+    LT         shift, and go to state 49
+    MTE        shift, and go to state 50
+    LTE        shift, and go to state 51
+    EQ         shift, and go to state 52
+    NE         shift, and go to state 53
+    AND        shift, and go to state 54
+    OR         shift, and go to state 55
 
 
 State 28
 
-    8 type_spec: VOID .
-   17 params: VOID .
+   15 fun_decl: type_spec ID LB $@1 . params RB $@2 fun_decl_cont
 
-    RB        reduce using rule 17 (params)
-    $default  reduce using rule 8 (type_spec)
+    STRING  shift, and go to state 1
+    VOID    shift, and go to state 56
+    INT     shift, and go to state 3
+    FLOAT   shift, and go to state 4
+    BOOL    shift, and go to state 5
+
+    $default  reduce using rule 23 (param)
+
+    type_spec   go to state 57
+    params      go to state 58
+    param_list  go to state 59
+    param       go to state 60
 
 
 State 29
 
-   20 param: type_spec . ID
+   76 expr: SUB I_CONST .
 
-    ID  shift, and go to state 60
+    $default  reduce using rule 76 (expr)
 
 
 State 30
 
-   14 fun_decl: type_spec ID LB params . RB $@1 function_compound_stmt
-   15         | type_spec ID LB params . RB SEMICOLON
+   77 expr: SUB F_CONST .
 
-    RB  shift, and go to state 61
+    $default  reduce using rule 77 (expr)
 
 
 State 31
 
-   16 params: param_list .
-   18 param_list: param_list . COMMA param
-
-    COMMA  shift, and go to state 62
-
-    $default  reduce using rule 16 (params)
-
-
-State 32
-
-   19 param_list: param .
-
-    $default  reduce using rule 19 (param_list)
-
-
-State 33
-
-   72 expr: SUB I_CONST .
-
-    $default  reduce using rule 72 (expr)
-
-
-State 34
-
-   73 expr: SUB F_CONST .
-
-    $default  reduce using rule 73 (expr)
-
-
-State 35
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   62     | NOT expr .
-   63     | expr . INC
-   64     | expr . DEC
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   66     | NOT expr .
+   67     | expr . INC
+   68     | expr . DEC
 
     INC  error (nonassociative)
     DEC  error (nonassociative)
 
-    $default  reduce using rule 62 (expr)
+    $default  reduce using rule 66 (expr)
 
 
-State 36
+State 32
 
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-   65     | LB expr . RB
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+   69     | LB expr . RB
 
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-    EQ   shift, and go to state 56
-    NE   shift, and go to state 57
-    AND  shift, and go to state 58
-    OR   shift, and go to state 59
-    RB   shift, and go to state 63
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+    EQ   shift, and go to state 52
+    NE   shift, and go to state 53
+    AND  shift, and go to state 54
+    OR   shift, and go to state 55
+    RB   shift, and go to state 61
 
 
-State 37
+State 33
 
-   43 expr: ID ASGN . expr
+   47 expr: ID ASGN . expr
+
+    SUB      shift, and go to state 18
+    NOT      shift, and go to state 19
+    LB       shift, and go to state 20
+    TRUE     shift, and go to state 21
+    FALSE    shift, and go to state 22
+    I_CONST  shift, and go to state 23
+    F_CONST  shift, and go to state 24
+    STRING   shift, and go to state 25
+    ID       shift, and go to state 26
+
+    expr  go to state 62
+
+
+State 34
+
+   48 expr: ID ADDASGN . expr
+
+    SUB      shift, and go to state 18
+    NOT      shift, and go to state 19
+    LB       shift, and go to state 20
+    TRUE     shift, and go to state 21
+    FALSE    shift, and go to state 22
+    I_CONST  shift, and go to state 23
+    F_CONST  shift, and go to state 24
+    STRING   shift, and go to state 25
+    ID       shift, and go to state 26
+
+    expr  go to state 63
+
+
+State 35
+
+   49 expr: ID SUBASGN . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -672,9 +685,9 @@ State 37
     expr  go to state 64
 
 
-State 38
+State 36
 
-   44 expr: ID ADDASGN . expr
+   50 expr: ID MULASGN . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -689,9 +702,9 @@ State 38
     expr  go to state 65
 
 
-State 39
+State 37
 
-   45 expr: ID SUBASGN . expr
+   51 expr: ID DIVASGN . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -706,9 +719,9 @@ State 39
     expr  go to state 66
 
 
-State 40
+State 38
 
-   46 expr: ID MULASGN . expr
+   52 expr: ID MODASGN . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -723,26 +736,9 @@ State 40
     expr  go to state 67
 
 
-State 41
+State 39
 
-   47 expr: ID DIVASGN . expr
-
-    SUB      shift, and go to state 18
-    NOT      shift, and go to state 19
-    LB       shift, and go to state 20
-    TRUE     shift, and go to state 21
-    FALSE    shift, and go to state 22
-    I_CONST  shift, and go to state 23
-    F_CONST  shift, and go to state 24
-    STRING   shift, and go to state 25
-    ID       shift, and go to state 26
-
-    expr  go to state 68
-
-
-State 42
-
-   48 expr: ID MODASGN . expr
+   71 expr: ID LB . args RB
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -754,40 +750,57 @@ State 42
     STRING   shift, and go to state 25
     ID       shift, and go to state 26
 
-    expr  go to state 69
+    $default  reduce using rule 82 (args)
+
+    expr      go to state 68
+    arg_list  go to state 69
+    args      go to state 70
 
 
-State 43
-
-   67 expr: ID LB . args RB
-
-    SUB      shift, and go to state 18
-    NOT      shift, and go to state 19
-    LB       shift, and go to state 20
-    TRUE     shift, and go to state 21
-    FALSE    shift, and go to state 22
-    I_CONST  shift, and go to state 23
-    F_CONST  shift, and go to state 24
-    STRING   shift, and go to state 25
-    ID       shift, and go to state 26
-
-    $default  reduce using rule 78 (args)
-
-    expr      go to state 70
-    arg_list  go to state 71
-    args      go to state 72
-
-
-State 44
+State 40
 
     7 var_decl: type_spec ID ASGN expr SEMICOLON .
 
     $default  reduce using rule 7 (var_decl)
 
 
-State 45
+State 41
 
-   57 expr: expr ADD . expr
+   61 expr: expr ADD . expr
+
+    SUB      shift, and go to state 18
+    NOT      shift, and go to state 19
+    LB       shift, and go to state 20
+    TRUE     shift, and go to state 21
+    FALSE    shift, and go to state 22
+    I_CONST  shift, and go to state 23
+    F_CONST  shift, and go to state 24
+    STRING   shift, and go to state 25
+    ID       shift, and go to state 26
+
+    expr  go to state 71
+
+
+State 42
+
+   62 expr: expr SUB . expr
+
+    SUB      shift, and go to state 18
+    NOT      shift, and go to state 19
+    LB       shift, and go to state 20
+    TRUE     shift, and go to state 21
+    FALSE    shift, and go to state 22
+    I_CONST  shift, and go to state 23
+    F_CONST  shift, and go to state 24
+    STRING   shift, and go to state 25
+    ID       shift, and go to state 26
+
+    expr  go to state 72
+
+
+State 43
+
+   63 expr: expr MUL . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -802,9 +815,9 @@ State 45
     expr  go to state 73
 
 
-State 46
+State 44
 
-   58 expr: expr SUB . expr
+   64 expr: expr DIV . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -819,9 +832,9 @@ State 46
     expr  go to state 74
 
 
-State 47
+State 45
 
-   59 expr: expr MUL . expr
+   65 expr: expr MOD . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -836,9 +849,23 @@ State 47
     expr  go to state 75
 
 
+State 46
+
+   67 expr: expr INC .
+
+    $default  reduce using rule 67 (expr)
+
+
+State 47
+
+   68 expr: expr DEC .
+
+    $default  reduce using rule 68 (expr)
+
+
 State 48
 
-   60 expr: expr DIV . expr
+   60 expr: expr MT . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -855,7 +882,7 @@ State 48
 
 State 49
 
-   61 expr: expr MOD . expr
+   58 expr: expr LT . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -872,21 +899,7 @@ State 49
 
 State 50
 
-   63 expr: expr INC .
-
-    $default  reduce using rule 63 (expr)
-
-
-State 51
-
-   64 expr: expr DEC .
-
-    $default  reduce using rule 64 (expr)
-
-
-State 52
-
-   56 expr: expr MT . expr
+   59 expr: expr MTE . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -901,9 +914,9 @@ State 52
     expr  go to state 78
 
 
-State 53
+State 51
 
-   54 expr: expr LT . expr
+   57 expr: expr LTE . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -918,9 +931,9 @@ State 53
     expr  go to state 79
 
 
-State 54
+State 52
 
-   55 expr: expr MTE . expr
+   55 expr: expr EQ . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -935,9 +948,9 @@ State 54
     expr  go to state 80
 
 
-State 55
+State 53
 
-   53 expr: expr LTE . expr
+   56 expr: expr NE . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -952,9 +965,9 @@ State 55
     expr  go to state 81
 
 
-State 56
+State 54
 
-   51 expr: expr EQ . expr
+   54 expr: expr AND . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -969,9 +982,9 @@ State 56
     expr  go to state 82
 
 
-State 57
+State 55
 
-   52 expr: expr NE . expr
+   53 expr: expr OR . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -986,62 +999,742 @@ State 57
     expr  go to state 83
 
 
+State 56
+
+    8 type_spec: VOID .
+   19 params: VOID .
+
+    RB        reduce using rule 19 (params)
+    $default  reduce using rule 8 (type_spec)
+
+
+State 57
+
+   22 param: type_spec . ID
+
+    ID  shift, and go to state 84
+
+
 State 58
 
-   50 expr: expr AND . expr
+   15 fun_decl: type_spec ID LB $@1 params . RB $@2 fun_decl_cont
 
-    SUB      shift, and go to state 18
-    NOT      shift, and go to state 19
-    LB       shift, and go to state 20
-    TRUE     shift, and go to state 21
-    FALSE    shift, and go to state 22
-    I_CONST  shift, and go to state 23
-    F_CONST  shift, and go to state 24
-    STRING   shift, and go to state 25
-    ID       shift, and go to state 26
-
-    expr  go to state 84
+    RB  shift, and go to state 85
 
 
 State 59
 
-   49 expr: expr OR . expr
+   18 params: param_list .
+   20 param_list: param_list . COMMA param
 
-    SUB      shift, and go to state 18
-    NOT      shift, and go to state 19
-    LB       shift, and go to state 20
-    TRUE     shift, and go to state 21
-    FALSE    shift, and go to state 22
-    I_CONST  shift, and go to state 23
-    F_CONST  shift, and go to state 24
-    STRING   shift, and go to state 25
-    ID       shift, and go to state 26
+    COMMA  shift, and go to state 86
 
-    expr  go to state 85
+    $default  reduce using rule 18 (params)
 
 
 State 60
 
-   20 param: type_spec ID .
+   21 param_list: param .
 
-    $default  reduce using rule 20 (param)
+    $default  reduce using rule 21 (param_list)
 
 
 State 61
 
-   14 fun_decl: type_spec ID LB params RB . $@1 function_compound_stmt
-   15         | type_spec ID LB params RB . SEMICOLON
+   69 expr: LB expr RB .
 
-    SEMICOLON  shift, and go to state 86
-
-    $default  reduce using rule 13 ($@1)
-
-    $@1  go to state 87
+    $default  reduce using rule 69 (expr)
 
 
 State 62
 
-   18 param_list: param_list COMMA . param
+   47 expr: ID ASGN expr .
+   53     | expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+    EQ   shift, and go to state 52
+    NE   shift, and go to state 53
+    AND  shift, and go to state 54
+    OR   shift, and go to state 55
+
+    $default  reduce using rule 47 (expr)
+
+
+State 63
+
+   48 expr: ID ADDASGN expr .
+   53     | expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+    EQ   shift, and go to state 52
+    NE   shift, and go to state 53
+    AND  shift, and go to state 54
+    OR   shift, and go to state 55
+
+    $default  reduce using rule 48 (expr)
+
+
+State 64
+
+   49 expr: ID SUBASGN expr .
+   53     | expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+    EQ   shift, and go to state 52
+    NE   shift, and go to state 53
+    AND  shift, and go to state 54
+    OR   shift, and go to state 55
+
+    $default  reduce using rule 49 (expr)
+
+
+State 65
+
+   50 expr: ID MULASGN expr .
+   53     | expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+    EQ   shift, and go to state 52
+    NE   shift, and go to state 53
+    AND  shift, and go to state 54
+    OR   shift, and go to state 55
+
+    $default  reduce using rule 50 (expr)
+
+
+State 66
+
+   51 expr: ID DIVASGN expr .
+   53     | expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+    EQ   shift, and go to state 52
+    NE   shift, and go to state 53
+    AND  shift, and go to state 54
+    OR   shift, and go to state 55
+
+    $default  reduce using rule 51 (expr)
+
+
+State 67
+
+   52 expr: ID MODASGN expr .
+   53     | expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+    EQ   shift, and go to state 52
+    NE   shift, and go to state 53
+    AND  shift, and go to state 54
+    OR   shift, and go to state 55
+
+    $default  reduce using rule 52 (expr)
+
+
+State 68
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+   80 arg_list: expr .
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+    EQ   shift, and go to state 52
+    NE   shift, and go to state 53
+    AND  shift, and go to state 54
+    OR   shift, and go to state 55
+
+    $default  reduce using rule 80 (arg_list)
+
+
+State 69
+
+   79 arg_list: arg_list . COMMA expr
+   81 args: arg_list .
+
+    COMMA  shift, and go to state 87
+
+    $default  reduce using rule 81 (args)
+
+
+State 70
+
+   71 expr: ID LB args . RB
+
+    RB  shift, and go to state 88
+
+
+State 71
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   61     | expr ADD expr .
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+
+    $default  reduce using rule 61 (expr)
+
+
+State 72
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   62     | expr SUB expr .
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+
+    $default  reduce using rule 62 (expr)
+
+
+State 73
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   63     | expr MUL expr .
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+
+    $default  reduce using rule 63 (expr)
+
+
+State 74
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   64     | expr DIV expr .
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+
+    $default  reduce using rule 64 (expr)
+
+
+State 75
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   65     | expr MOD expr .
+   67     | expr . INC
+   68     | expr . DEC
+
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+
+    $default  reduce using rule 65 (expr)
+
+
+State 76
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   60     | expr MT expr .
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+
+    $default  reduce using rule 60 (expr)
+
+
+State 77
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   58     | expr LT expr .
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+
+    $default  reduce using rule 58 (expr)
+
+
+State 78
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   59     | expr MTE expr .
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+
+    $default  reduce using rule 59 (expr)
+
+
+State 79
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   57     | expr LTE expr .
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+
+    $default  reduce using rule 57 (expr)
+
+
+State 80
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   55     | expr EQ expr .
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+
+    $default  reduce using rule 55 (expr)
+
+
+State 81
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   56     | expr NE expr .
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+
+    $default  reduce using rule 56 (expr)
+
+
+State 82
+
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   54     | expr AND expr .
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+
+    $default  reduce using rule 54 (expr)
+
+
+State 83
+
+   53 expr: expr . OR expr
+   53     | expr OR expr .
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+
+    $default  reduce using rule 53 (expr)
+
+
+State 84
+
+   22 param: type_spec ID .
+
+    $default  reduce using rule 22 (param)
+
+
+State 85
+
+   15 fun_decl: type_spec ID LB $@1 params RB . $@2 fun_decl_cont
+
+    $default  reduce using rule 14 ($@2)
+
+    $@2  go to state 89
+
+
+State 86
+
+   20 param_list: param_list COMMA . param
 
     STRING  shift, and go to state 1
     VOID    shift, and go to state 2
@@ -1049,715 +1742,15 @@ State 62
     FLOAT   shift, and go to state 4
     BOOL    shift, and go to state 5
 
-    $default  reduce using rule 21 (param)
+    $default  reduce using rule 23 (param)
 
-    type_spec  go to state 29
-    param      go to state 88
-
-
-State 63
-
-   65 expr: LB expr RB .
-
-    $default  reduce using rule 65 (expr)
-
-
-State 64
-
-   43 expr: ID ASGN expr .
-   49     | expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-    EQ   shift, and go to state 56
-    NE   shift, and go to state 57
-    AND  shift, and go to state 58
-    OR   shift, and go to state 59
-
-    $default  reduce using rule 43 (expr)
-
-
-State 65
-
-   44 expr: ID ADDASGN expr .
-   49     | expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-    EQ   shift, and go to state 56
-    NE   shift, and go to state 57
-    AND  shift, and go to state 58
-    OR   shift, and go to state 59
-
-    $default  reduce using rule 44 (expr)
-
-
-State 66
-
-   45 expr: ID SUBASGN expr .
-   49     | expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-    EQ   shift, and go to state 56
-    NE   shift, and go to state 57
-    AND  shift, and go to state 58
-    OR   shift, and go to state 59
-
-    $default  reduce using rule 45 (expr)
-
-
-State 67
-
-   46 expr: ID MULASGN expr .
-   49     | expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-    EQ   shift, and go to state 56
-    NE   shift, and go to state 57
-    AND  shift, and go to state 58
-    OR   shift, and go to state 59
-
-    $default  reduce using rule 46 (expr)
-
-
-State 68
-
-   47 expr: ID DIVASGN expr .
-   49     | expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-    EQ   shift, and go to state 56
-    NE   shift, and go to state 57
-    AND  shift, and go to state 58
-    OR   shift, and go to state 59
-
-    $default  reduce using rule 47 (expr)
-
-
-State 69
-
-   48 expr: ID MODASGN expr .
-   49     | expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-    EQ   shift, and go to state 56
-    NE   shift, and go to state 57
-    AND  shift, and go to state 58
-    OR   shift, and go to state 59
-
-    $default  reduce using rule 48 (expr)
-
-
-State 70
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-   76 arg_list: expr .
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-    EQ   shift, and go to state 56
-    NE   shift, and go to state 57
-    AND  shift, and go to state 58
-    OR   shift, and go to state 59
-
-    $default  reduce using rule 76 (arg_list)
-
-
-State 71
-
-   75 arg_list: arg_list . COMMA expr
-   77 args: arg_list .
-
-    COMMA  shift, and go to state 89
-
-    $default  reduce using rule 77 (args)
-
-
-State 72
-
-   67 expr: ID LB args . RB
-
-    RB  shift, and go to state 90
-
-
-State 73
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   57     | expr ADD expr .
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-
-    $default  reduce using rule 57 (expr)
-
-
-State 74
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   58     | expr SUB expr .
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-
-    $default  reduce using rule 58 (expr)
-
-
-State 75
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   59     | expr MUL expr .
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-
-    $default  reduce using rule 59 (expr)
-
-
-State 76
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   60     | expr DIV expr .
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-
-    $default  reduce using rule 60 (expr)
-
-
-State 77
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   61     | expr MOD expr .
-   63     | expr . INC
-   64     | expr . DEC
-
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-
-    $default  reduce using rule 61 (expr)
-
-
-State 78
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   56     | expr MT expr .
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-
-    $default  reduce using rule 56 (expr)
-
-
-State 79
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   54     | expr LT expr .
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-
-    $default  reduce using rule 54 (expr)
-
-
-State 80
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   55     | expr MTE expr .
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-
-    $default  reduce using rule 55 (expr)
-
-
-State 81
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   53     | expr LTE expr .
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-
-    $default  reduce using rule 53 (expr)
-
-
-State 82
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   51     | expr EQ expr .
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-
-    $default  reduce using rule 51 (expr)
-
-
-State 83
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   52     | expr NE expr .
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-
-    $default  reduce using rule 52 (expr)
-
-
-State 84
-
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   50     | expr AND expr .
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-
-    $default  reduce using rule 50 (expr)
-
-
-State 85
-
-   49 expr: expr . OR expr
-   49     | expr OR expr .
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-
-    $default  reduce using rule 49 (expr)
-
-
-State 86
-
-   15 fun_decl: type_spec ID LB params RB SEMICOLON .
-
-    $default  reduce using rule 15 (fun_decl)
+    type_spec  go to state 57
+    param      go to state 90
 
 
 State 87
 
-   14 fun_decl: type_spec ID LB params RB $@1 . function_compound_stmt
-
-    LCB  shift, and go to state 91
-
-    function_compound_stmt  go to state 92
-
-
-State 88
-
-   18 param_list: param_list COMMA param .
-
-    $default  reduce using rule 18 (param_list)
-
-
-State 89
-
-   75 arg_list: arg_list COMMA . expr
+   79 arg_list: arg_list COMMA . expr
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -1769,161 +1762,184 @@ State 89
     STRING   shift, and go to state 25
     ID       shift, and go to state 26
 
-    expr  go to state 93
+    expr  go to state 91
+
+
+State 88
+
+   71 expr: ID LB args RB .
+
+    $default  reduce using rule 71 (expr)
+
+
+State 89
+
+   15 fun_decl: type_spec ID LB $@1 params RB $@2 . fun_decl_cont
+
+    SEMICOLON  shift, and go to state 92
+    LCB        shift, and go to state 93
+
+    fun_decl_cont           go to state 94
+    function_compound_stmt  go to state 95
 
 
 State 90
 
-   67 expr: ID LB args RB .
+   20 param_list: param_list COMMA param .
 
-    $default  reduce using rule 67 (expr)
+    $default  reduce using rule 20 (param_list)
 
 
 State 91
 
-   23 function_compound_stmt: LCB . $@2 content_list RCB
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+   79 arg_list: arg_list COMMA expr .
 
-    $default  reduce using rule 22 ($@2)
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+    EQ   shift, and go to state 52
+    NE   shift, and go to state 53
+    AND  shift, and go to state 54
+    OR   shift, and go to state 55
 
-    $@2  go to state 94
+    $default  reduce using rule 79 (arg_list)
 
 
 State 92
 
-   14 fun_decl: type_spec ID LB params RB $@1 function_compound_stmt .
+   16 fun_decl_cont: SEMICOLON .
 
-    $default  reduce using rule 14 (fun_decl)
+    $default  reduce using rule 16 (fun_decl_cont)
 
 
 State 93
 
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
-   75 arg_list: arg_list COMMA expr .
+   26 function_compound_stmt: LCB . content_list RCB
 
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-    EQ   shift, and go to state 56
-    NE   shift, and go to state 57
-    AND  shift, and go to state 58
-    OR   shift, and go to state 59
+    $default  reduce using rule 28 (content_list)
 
-    $default  reduce using rule 75 (arg_list)
+    content_list  go to state 96
 
 
 State 94
 
-   23 function_compound_stmt: LCB $@2 . content_list RCB
+   15 fun_decl: type_spec ID LB $@1 params RB $@2 fun_decl_cont .
 
-    $default  reduce using rule 27 (content_list)
-
-    content_list  go to state 95
+    $default  reduce using rule 15 (fun_decl)
 
 
 State 95
 
-   23 function_compound_stmt: LCB $@2 content_list . RCB
-   26 content_list: content_list . content
+   17 fun_decl_cont: function_compound_stmt .
 
-    PRINT    shift, and go to state 96
-    IF       shift, and go to state 97
-    WHILE    shift, and go to state 98
+    $default  reduce using rule 17 (fun_decl_cont)
+
+
+State 96
+
+   26 function_compound_stmt: LCB content_list . RCB
+   27 content_list: content_list . content
+
+    PRINT    shift, and go to state 97
+    IF       shift, and go to state 98
+    WHILE    shift, and go to state 99
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
     LB       shift, and go to state 20
-    LCB      shift, and go to state 99
-    RCB      shift, and go to state 100
+    LCB      shift, and go to state 100
+    RCB      shift, and go to state 101
     TRUE     shift, and go to state 21
     FALSE    shift, and go to state 22
-    RET      shift, and go to state 101
+    RET      shift, and go to state 102
     I_CONST  shift, and go to state 23
     F_CONST  shift, and go to state 24
-    STRING   shift, and go to state 102
+    STRING   shift, and go to state 103
     ID       shift, and go to state 26
     VOID     shift, and go to state 2
     INT      shift, and go to state 3
     FLOAT    shift, and go to state 4
     BOOL     shift, and go to state 5
 
-    var_decl       go to state 103
-    type_spec      go to state 104
-    compound_stmt  go to state 105
-    content        go to state 106
-    stmt           go to state 107
-    print_stmt     go to state 108
-    while_stmt     go to state 109
-    if_stmt        go to state 110
-    return_stmt    go to state 111
-    expr           go to state 112
-
-
-State 96
-
-   36 print_stmt: PRINT . LB ID RB
-   37           | PRINT . LB STRING RB
-
-    LB  shift, and go to state 113
+    var_decl       go to state 104
+    type_spec      go to state 105
+    compound_stmt  go to state 106
+    content        go to state 107
+    stmt           go to state 108
+    print_stmt     go to state 109
+    while_stmt     go to state 110
+    if_stmt        go to state 111
+    return_stmt    go to state 112
+    expr           go to state 113
 
 
 State 97
 
-   39 if_stmt: IF . LB expr RB stmt
-   40        | IF . LB expr RB stmt ELSE stmt
+   37 print_stmt: PRINT . LB ID RB
+   38           | PRINT . LB STRING RB
 
     LB  shift, and go to state 114
 
 
 State 98
 
-   38 while_stmt: WHILE . LB expr RB stmt
+   40 if_stmt: IF . LB expr RB compound_stmt
+   41        | IF . LB expr RB compound_stmt else_if_stmt
 
     LB  shift, and go to state 115
 
 
 State 99
 
-   25 compound_stmt: LCB . $@3 content_list RCB
+   39 while_stmt: WHILE . LB expr RB stmt
 
-    $default  reduce using rule 24 ($@3)
-
-    $@3  go to state 116
+    LB  shift, and go to state 116
 
 
 State 100
 
-   23 function_compound_stmt: LCB $@2 content_list RCB .
+   25 compound_stmt: LCB . $@3 content_list RCB
 
-    $default  reduce using rule 23 (function_compound_stmt)
+    $default  reduce using rule 24 ($@3)
+
+    $@3  go to state 117
 
 
 State 101
 
-   41 return_stmt: RET . SEMICOLON
-   42            | RET . expr SEMICOLON
+   26 function_compound_stmt: LCB content_list RCB .
 
-    SEMICOLON  shift, and go to state 117
+    $default  reduce using rule 26 (function_compound_stmt)
+
+
+State 102
+
+   45 return_stmt: RET . SEMICOLON
+   46            | RET . expr SEMICOLON
+
+    SEMICOLON  shift, and go to state 118
     SUB        shift, and go to state 18
     NOT        shift, and go to state 19
     LB         shift, and go to state 20
@@ -1934,149 +1950,132 @@ State 101
     STRING     shift, and go to state 25
     ID         shift, and go to state 26
 
-    expr  go to state 118
-
-
-State 102
-
-   12 type_spec: STRING .
-   74 expr: STRING .
-
-    ID        reduce using rule 12 (type_spec)
-    $default  reduce using rule 74 (expr)
+    expr  go to state 119
 
 
 State 103
 
-   28 content: var_decl .
+   12 type_spec: STRING .
+   78 expr: STRING .
 
-    $default  reduce using rule 28 (content)
+    ID        reduce using rule 12 (type_spec)
+    $default  reduce using rule 78 (expr)
 
 
 State 104
 
-    6 var_decl: type_spec . ID SEMICOLON
-    7         | type_spec . ID ASGN expr SEMICOLON
-
-    ID  shift, and go to state 119
-
-
-State 105
-
-   31 stmt: compound_stmt .
-
-    $default  reduce using rule 31 (stmt)
-
-
-State 106
-
-   26 content_list: content_list content .
-
-    $default  reduce using rule 26 (content_list)
-
-
-State 107
-
-   29 content: stmt .
+   29 content: var_decl .
 
     $default  reduce using rule 29 (content)
 
 
-State 108
+State 105
 
-   35 stmt: print_stmt . SEMICOLON
+    6 var_decl: type_spec . ID SEMICOLON
+    7         | type_spec . ID ASGN expr SEMICOLON
 
-    SEMICOLON  shift, and go to state 120
-
-
-State 109
-
-   33 stmt: while_stmt .
-
-    $default  reduce using rule 33 (stmt)
+    ID  shift, and go to state 120
 
 
-State 110
+State 106
 
-   32 stmt: if_stmt .
+   32 stmt: compound_stmt .
 
     $default  reduce using rule 32 (stmt)
 
 
-State 111
+State 107
 
-   34 stmt: return_stmt .
+   27 content_list: content_list content .
+
+    $default  reduce using rule 27 (content_list)
+
+
+State 108
+
+   30 content: stmt .
+
+    $default  reduce using rule 30 (content)
+
+
+State 109
+
+   36 stmt: print_stmt . SEMICOLON
+
+    SEMICOLON  shift, and go to state 121
+
+
+State 110
+
+   34 stmt: while_stmt .
 
     $default  reduce using rule 34 (stmt)
 
 
+State 111
+
+   33 stmt: if_stmt .
+
+    $default  reduce using rule 33 (stmt)
+
+
 State 112
 
-   30 stmt: expr . SEMICOLON
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
+   35 stmt: return_stmt .
 
-    SEMICOLON  shift, and go to state 121
-    ADD        shift, and go to state 45
-    SUB        shift, and go to state 46
-    MUL        shift, and go to state 47
-    DIV        shift, and go to state 48
-    MOD        shift, and go to state 49
-    INC        shift, and go to state 50
-    DEC        shift, and go to state 51
-    MT         shift, and go to state 52
-    LT         shift, and go to state 53
-    MTE        shift, and go to state 54
-    LTE        shift, and go to state 55
-    EQ         shift, and go to state 56
-    NE         shift, and go to state 57
-    AND        shift, and go to state 58
-    OR         shift, and go to state 59
+    $default  reduce using rule 35 (stmt)
 
 
 State 113
 
-   36 print_stmt: PRINT LB . ID RB
-   37           | PRINT LB . STRING RB
+   31 stmt: expr . SEMICOLON
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
 
-    STRING  shift, and go to state 122
-    ID      shift, and go to state 123
+    SEMICOLON  shift, and go to state 122
+    ADD        shift, and go to state 41
+    SUB        shift, and go to state 42
+    MUL        shift, and go to state 43
+    DIV        shift, and go to state 44
+    MOD        shift, and go to state 45
+    INC        shift, and go to state 46
+    DEC        shift, and go to state 47
+    MT         shift, and go to state 48
+    LT         shift, and go to state 49
+    MTE        shift, and go to state 50
+    LTE        shift, and go to state 51
+    EQ         shift, and go to state 52
+    NE         shift, and go to state 53
+    AND        shift, and go to state 54
+    OR         shift, and go to state 55
 
 
 State 114
 
-   39 if_stmt: IF LB . expr RB stmt
-   40        | IF LB . expr RB stmt ELSE stmt
+   37 print_stmt: PRINT LB . ID RB
+   38           | PRINT LB . STRING RB
 
-    SUB      shift, and go to state 18
-    NOT      shift, and go to state 19
-    LB       shift, and go to state 20
-    TRUE     shift, and go to state 21
-    FALSE    shift, and go to state 22
-    I_CONST  shift, and go to state 23
-    F_CONST  shift, and go to state 24
-    STRING   shift, and go to state 25
-    ID       shift, and go to state 26
-
-    expr  go to state 124
+    STRING  shift, and go to state 123
+    ID      shift, and go to state 124
 
 
 State 115
 
-   38 while_stmt: WHILE LB . expr RB stmt
+   40 if_stmt: IF LB . expr RB compound_stmt
+   41        | IF LB . expr RB compound_stmt else_if_stmt
 
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
@@ -2093,58 +2092,75 @@ State 115
 
 State 116
 
-   25 compound_stmt: LCB $@3 . content_list RCB
+   39 while_stmt: WHILE LB . expr RB stmt
 
-    $default  reduce using rule 27 (content_list)
+    SUB      shift, and go to state 18
+    NOT      shift, and go to state 19
+    LB       shift, and go to state 20
+    TRUE     shift, and go to state 21
+    FALSE    shift, and go to state 22
+    I_CONST  shift, and go to state 23
+    F_CONST  shift, and go to state 24
+    STRING   shift, and go to state 25
+    ID       shift, and go to state 26
 
-    content_list  go to state 126
+    expr  go to state 126
 
 
 State 117
 
-   41 return_stmt: RET SEMICOLON .
+   25 compound_stmt: LCB $@3 . content_list RCB
 
-    $default  reduce using rule 41 (return_stmt)
+    $default  reduce using rule 28 (content_list)
+
+    content_list  go to state 127
 
 
 State 118
 
-   42 return_stmt: RET expr . SEMICOLON
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
+   45 return_stmt: RET SEMICOLON .
 
-    SEMICOLON  shift, and go to state 127
-    ADD        shift, and go to state 45
-    SUB        shift, and go to state 46
-    MUL        shift, and go to state 47
-    DIV        shift, and go to state 48
-    MOD        shift, and go to state 49
-    INC        shift, and go to state 50
-    DEC        shift, and go to state 51
-    MT         shift, and go to state 52
-    LT         shift, and go to state 53
-    MTE        shift, and go to state 54
-    LTE        shift, and go to state 55
-    EQ         shift, and go to state 56
-    NE         shift, and go to state 57
-    AND        shift, and go to state 58
-    OR         shift, and go to state 59
+    $default  reduce using rule 45 (return_stmt)
 
 
 State 119
+
+   46 return_stmt: RET expr . SEMICOLON
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
+
+    SEMICOLON  shift, and go to state 128
+    ADD        shift, and go to state 41
+    SUB        shift, and go to state 42
+    MUL        shift, and go to state 43
+    DIV        shift, and go to state 44
+    MOD        shift, and go to state 45
+    INC        shift, and go to state 46
+    DEC        shift, and go to state 47
+    MT         shift, and go to state 48
+    LT         shift, and go to state 49
+    MTE        shift, and go to state 50
+    LTE        shift, and go to state 51
+    EQ         shift, and go to state 52
+    NE         shift, and go to state 53
+    AND        shift, and go to state 54
+    OR         shift, and go to state 55
+
+
+State 120
 
     6 var_decl: type_spec ID . SEMICOLON
     7         | type_spec ID . ASGN expr SEMICOLON
@@ -2153,278 +2169,346 @@ State 119
     ASGN       shift, and go to state 16
 
 
-State 120
-
-   35 stmt: print_stmt SEMICOLON .
-
-    $default  reduce using rule 35 (stmt)
-
-
 State 121
 
-   30 stmt: expr SEMICOLON .
+   36 stmt: print_stmt SEMICOLON .
 
-    $default  reduce using rule 30 (stmt)
+    $default  reduce using rule 36 (stmt)
 
 
 State 122
 
-   37 print_stmt: PRINT LB STRING . RB
+   31 stmt: expr SEMICOLON .
 
-    RB  shift, and go to state 128
+    $default  reduce using rule 31 (stmt)
 
 
 State 123
 
-   36 print_stmt: PRINT LB ID . RB
+   38 print_stmt: PRINT LB STRING . RB
 
     RB  shift, and go to state 129
 
 
 State 124
 
-   39 if_stmt: IF LB expr . RB stmt
-   40        | IF LB expr . RB stmt ELSE stmt
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
+   37 print_stmt: PRINT LB ID . RB
 
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-    EQ   shift, and go to state 56
-    NE   shift, and go to state 57
-    AND  shift, and go to state 58
-    OR   shift, and go to state 59
-    RB   shift, and go to state 130
+    RB  shift, and go to state 130
 
 
 State 125
 
-   38 while_stmt: WHILE LB expr . RB stmt
-   49 expr: expr . OR expr
-   50     | expr . AND expr
-   51     | expr . EQ expr
-   52     | expr . NE expr
-   53     | expr . LTE expr
-   54     | expr . LT expr
-   55     | expr . MTE expr
-   56     | expr . MT expr
-   57     | expr . ADD expr
-   58     | expr . SUB expr
-   59     | expr . MUL expr
-   60     | expr . DIV expr
-   61     | expr . MOD expr
-   63     | expr . INC
-   64     | expr . DEC
+   40 if_stmt: IF LB expr . RB compound_stmt
+   41        | IF LB expr . RB compound_stmt else_if_stmt
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
 
-    ADD  shift, and go to state 45
-    SUB  shift, and go to state 46
-    MUL  shift, and go to state 47
-    DIV  shift, and go to state 48
-    MOD  shift, and go to state 49
-    INC  shift, and go to state 50
-    DEC  shift, and go to state 51
-    MT   shift, and go to state 52
-    LT   shift, and go to state 53
-    MTE  shift, and go to state 54
-    LTE  shift, and go to state 55
-    EQ   shift, and go to state 56
-    NE   shift, and go to state 57
-    AND  shift, and go to state 58
-    OR   shift, and go to state 59
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+    EQ   shift, and go to state 52
+    NE   shift, and go to state 53
+    AND  shift, and go to state 54
+    OR   shift, and go to state 55
     RB   shift, and go to state 131
 
 
 State 126
 
-   25 compound_stmt: LCB $@3 content_list . RCB
-   26 content_list: content_list . content
+   39 while_stmt: WHILE LB expr . RB stmt
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
 
-    PRINT    shift, and go to state 96
-    IF       shift, and go to state 97
-    WHILE    shift, and go to state 98
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+    EQ   shift, and go to state 52
+    NE   shift, and go to state 53
+    AND  shift, and go to state 54
+    OR   shift, and go to state 55
+    RB   shift, and go to state 132
+
+
+State 127
+
+   25 compound_stmt: LCB $@3 content_list . RCB
+   27 content_list: content_list . content
+
+    PRINT    shift, and go to state 97
+    IF       shift, and go to state 98
+    WHILE    shift, and go to state 99
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
     LB       shift, and go to state 20
-    LCB      shift, and go to state 99
-    RCB      shift, and go to state 132
+    LCB      shift, and go to state 100
+    RCB      shift, and go to state 133
     TRUE     shift, and go to state 21
     FALSE    shift, and go to state 22
-    RET      shift, and go to state 101
+    RET      shift, and go to state 102
     I_CONST  shift, and go to state 23
     F_CONST  shift, and go to state 24
-    STRING   shift, and go to state 102
+    STRING   shift, and go to state 103
     ID       shift, and go to state 26
     VOID     shift, and go to state 2
     INT      shift, and go to state 3
     FLOAT    shift, and go to state 4
     BOOL     shift, and go to state 5
 
-    var_decl       go to state 103
-    type_spec      go to state 104
-    compound_stmt  go to state 105
-    content        go to state 106
-    stmt           go to state 107
-    print_stmt     go to state 108
-    while_stmt     go to state 109
-    if_stmt        go to state 110
-    return_stmt    go to state 111
-    expr           go to state 112
-
-
-State 127
-
-   42 return_stmt: RET expr SEMICOLON .
-
-    $default  reduce using rule 42 (return_stmt)
+    var_decl       go to state 104
+    type_spec      go to state 105
+    compound_stmt  go to state 106
+    content        go to state 107
+    stmt           go to state 108
+    print_stmt     go to state 109
+    while_stmt     go to state 110
+    if_stmt        go to state 111
+    return_stmt    go to state 112
+    expr           go to state 113
 
 
 State 128
 
-   37 print_stmt: PRINT LB STRING RB .
+   46 return_stmt: RET expr SEMICOLON .
 
-    $default  reduce using rule 37 (print_stmt)
+    $default  reduce using rule 46 (return_stmt)
 
 
 State 129
 
-   36 print_stmt: PRINT LB ID RB .
+   38 print_stmt: PRINT LB STRING RB .
 
-    $default  reduce using rule 36 (print_stmt)
+    $default  reduce using rule 38 (print_stmt)
 
 
 State 130
 
-   39 if_stmt: IF LB expr RB . stmt
-   40        | IF LB expr RB . stmt ELSE stmt
+   37 print_stmt: PRINT LB ID RB .
 
-    PRINT    shift, and go to state 96
-    IF       shift, and go to state 97
-    WHILE    shift, and go to state 98
-    SUB      shift, and go to state 18
-    NOT      shift, and go to state 19
-    LB       shift, and go to state 20
-    LCB      shift, and go to state 99
-    TRUE     shift, and go to state 21
-    FALSE    shift, and go to state 22
-    RET      shift, and go to state 101
-    I_CONST  shift, and go to state 23
-    F_CONST  shift, and go to state 24
-    STRING   shift, and go to state 25
-    ID       shift, and go to state 26
-
-    compound_stmt  go to state 105
-    stmt           go to state 133
-    print_stmt     go to state 108
-    while_stmt     go to state 109
-    if_stmt        go to state 110
-    return_stmt    go to state 111
-    expr           go to state 112
+    $default  reduce using rule 37 (print_stmt)
 
 
 State 131
 
-   38 while_stmt: WHILE LB expr RB . stmt
+   40 if_stmt: IF LB expr RB . compound_stmt
+   41        | IF LB expr RB . compound_stmt else_if_stmt
 
-    PRINT    shift, and go to state 96
-    IF       shift, and go to state 97
-    WHILE    shift, and go to state 98
+    LCB  shift, and go to state 100
+
+    compound_stmt  go to state 134
+
+
+State 132
+
+   39 while_stmt: WHILE LB expr RB . stmt
+
+    PRINT    shift, and go to state 97
+    IF       shift, and go to state 98
+    WHILE    shift, and go to state 99
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
     LB       shift, and go to state 20
-    LCB      shift, and go to state 99
+    LCB      shift, and go to state 100
     TRUE     shift, and go to state 21
     FALSE    shift, and go to state 22
-    RET      shift, and go to state 101
+    RET      shift, and go to state 102
     I_CONST  shift, and go to state 23
     F_CONST  shift, and go to state 24
     STRING   shift, and go to state 25
     ID       shift, and go to state 26
 
-    compound_stmt  go to state 105
-    stmt           go to state 134
-    print_stmt     go to state 108
-    while_stmt     go to state 109
-    if_stmt        go to state 110
-    return_stmt    go to state 111
-    expr           go to state 112
+    compound_stmt  go to state 106
+    stmt           go to state 135
+    print_stmt     go to state 109
+    while_stmt     go to state 110
+    if_stmt        go to state 111
+    return_stmt    go to state 112
+    expr           go to state 113
 
 
-State 132
+State 133
 
    25 compound_stmt: LCB $@3 content_list RCB .
 
     $default  reduce using rule 25 (compound_stmt)
 
 
-State 133
-
-   39 if_stmt: IF LB expr RB stmt .
-   40        | IF LB expr RB stmt . ELSE stmt
-
-    ELSE  shift, and go to state 135
-
-    $default  reduce using rule 39 (if_stmt)
-
-
 State 134
 
-   38 while_stmt: WHILE LB expr RB stmt .
+   40 if_stmt: IF LB expr RB compound_stmt .
+   41        | IF LB expr RB compound_stmt . else_if_stmt
 
-    $default  reduce using rule 38 (while_stmt)
+    ELSE  shift, and go to state 136
+
+    $default  reduce using rule 40 (if_stmt)
+
+    else_if_stmt  go to state 137
+    else_stmt     go to state 138
 
 
 State 135
 
-   40 if_stmt: IF LB expr RB stmt ELSE . stmt
+   39 while_stmt: WHILE LB expr RB stmt .
 
-    PRINT    shift, and go to state 96
-    IF       shift, and go to state 97
-    WHILE    shift, and go to state 98
+    $default  reduce using rule 39 (while_stmt)
+
+
+State 136
+
+   42 else_if_stmt: ELSE . IF LB expr RB compound_stmt else_if_stmt
+   44 else_stmt: ELSE . compound_stmt
+
+    IF   shift, and go to state 139
+    LCB  shift, and go to state 100
+
+    compound_stmt  go to state 140
+
+
+State 137
+
+   41 if_stmt: IF LB expr RB compound_stmt else_if_stmt .
+
+    $default  reduce using rule 41 (if_stmt)
+
+
+State 138
+
+   43 else_if_stmt: else_stmt .
+
+    $default  reduce using rule 43 (else_if_stmt)
+
+
+State 139
+
+   42 else_if_stmt: ELSE IF . LB expr RB compound_stmt else_if_stmt
+
+    LB  shift, and go to state 141
+
+
+State 140
+
+   44 else_stmt: ELSE compound_stmt .
+
+    $default  reduce using rule 44 (else_stmt)
+
+
+State 141
+
+   42 else_if_stmt: ELSE IF LB . expr RB compound_stmt else_if_stmt
+
     SUB      shift, and go to state 18
     NOT      shift, and go to state 19
     LB       shift, and go to state 20
-    LCB      shift, and go to state 99
     TRUE     shift, and go to state 21
     FALSE    shift, and go to state 22
-    RET      shift, and go to state 101
     I_CONST  shift, and go to state 23
     F_CONST  shift, and go to state 24
     STRING   shift, and go to state 25
     ID       shift, and go to state 26
 
-    compound_stmt  go to state 105
-    stmt           go to state 136
-    print_stmt     go to state 108
-    while_stmt     go to state 109
-    if_stmt        go to state 110
-    return_stmt    go to state 111
-    expr           go to state 112
+    expr  go to state 142
 
 
-State 136
+State 142
 
-   40 if_stmt: IF LB expr RB stmt ELSE stmt .
+   42 else_if_stmt: ELSE IF LB expr . RB compound_stmt else_if_stmt
+   53 expr: expr . OR expr
+   54     | expr . AND expr
+   55     | expr . EQ expr
+   56     | expr . NE expr
+   57     | expr . LTE expr
+   58     | expr . LT expr
+   59     | expr . MTE expr
+   60     | expr . MT expr
+   61     | expr . ADD expr
+   62     | expr . SUB expr
+   63     | expr . MUL expr
+   64     | expr . DIV expr
+   65     | expr . MOD expr
+   67     | expr . INC
+   68     | expr . DEC
 
-    $default  reduce using rule 40 (if_stmt)
+    ADD  shift, and go to state 41
+    SUB  shift, and go to state 42
+    MUL  shift, and go to state 43
+    DIV  shift, and go to state 44
+    MOD  shift, and go to state 45
+    INC  shift, and go to state 46
+    DEC  shift, and go to state 47
+    MT   shift, and go to state 48
+    LT   shift, and go to state 49
+    MTE  shift, and go to state 50
+    LTE  shift, and go to state 51
+    EQ   shift, and go to state 52
+    NE   shift, and go to state 53
+    AND  shift, and go to state 54
+    OR   shift, and go to state 55
+    RB   shift, and go to state 143
+
+
+State 143
+
+   42 else_if_stmt: ELSE IF LB expr RB . compound_stmt else_if_stmt
+
+    LCB  shift, and go to state 100
+
+    compound_stmt  go to state 144
+
+
+State 144
+
+   42 else_if_stmt: ELSE IF LB expr RB compound_stmt . else_if_stmt
+
+    ELSE  shift, and go to state 136
+
+    else_if_stmt  go to state 145
+    else_stmt     go to state 138
+
+
+State 145
+
+   42 else_if_stmt: ELSE IF LB expr RB compound_stmt else_if_stmt .
+
+    $default  reduce using rule 42 (else_if_stmt)
