@@ -143,7 +143,13 @@ id			{letter}+({letter}|{digit})*
 
 [;]         { CONCAT return(SEMICOLON); }
 [\n]        {   
-              printf("%d: %s\n", yylineno, buf); 
+              if(buf[0] == '\0'){
+                printf("%d:\n", yylineno);
+              }
+              else{
+                printf("%d: %s\n", yylineno, buf);
+              }
+              
 			        if(dump_flag){
 				        display_dump();
 			        }	
