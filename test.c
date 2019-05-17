@@ -27,6 +27,8 @@
 // }
 
 void foo1(int a, int b);
+
+int foo3(int a, float c, string d, int k);
 int global = 10;
 int foo(){
     int b;
@@ -45,7 +47,8 @@ int foo(){
 
 int main(){
     int m;
-    int n;
+    void ha;
+    int n = -10;
     foo();
     foo1(m, n);
     return 0;

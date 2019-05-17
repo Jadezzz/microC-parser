@@ -14,7 +14,7 @@ extern char err_msg[BUF_SIZE];
 char buf[BUF_SIZE];
 char string_buf[BUF_SIZE];
 int dump_flag=0;
-int error_flag=0;
+int semantic_error_flag=0;
 int syntax_error_flag=0;
 
 /* This macro is used to record code line */
@@ -154,12 +154,12 @@ id			{letter}+({letter}|{digit})*
 				        display_dump();
 			        }	
 
-              if(error_flag) {
+              if(semantic_error_flag) {
                   printf("\n|-----------------------------------------------|\n");
                   printf("| Error found in line %d: %s\n", yylineno, buf);
                   printf("| %s", err_msg);
                   printf("\n|-----------------------------------------------|\n\n");
-                  error_flag = 0;
+                  semantic_error_flag = 0;
                   memset(err_msg, '\0', BUF_SIZE);
               }
 
@@ -168,7 +168,7 @@ id			{letter}+({letter}|{digit})*
                   printf("| Error found in line %d: %s\n", yylineno, buf);
                   printf("| syntax error");
                   printf("\n|-----------------------------------------------|\n\n");
-                  error_flag = 0;
+                  syntax_error_flag = 0;
                   memset(err_msg, '\0', BUF_SIZE);
 
                   exit(1);

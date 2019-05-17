@@ -65,25 +65,34 @@
 #line 2 "compiler_hw2.y" /* yacc.c:339  */
 
 
+#define MAX_NAME 32 				// Max ID name
+#define MAX_ATTRI 32 				// Max attribute list
 #define BUF_SIZE 128
+
+#define NIL (void*)-1 
+
+
 extern int yylineno;
 extern int yylex();
-extern char* yytext;   // Get current token from lex
-extern char buf[BUF_SIZE];  // Get current code line from lex
-extern int dump_flag;
-extern int error_flag;
-extern int syntax_error_flag;
-int param_scope_on = 0;
+extern char* yytext;   				// Get current token from lex
 
+extern char buf[BUF_SIZE];  		// Get current code line from lex
 
-char err_msg[BUF_SIZE] = {'\0'};
+char attributes_buf[MAX_ATTRI] = {'\0'}; // Buffer for attribute list
+char err_msg[BUF_SIZE] = {'\0'}; 	// Buffer for error message
+extern int dump_flag; 				// Flag for dumping symbol table
+extern int semantic_error_flag; 	// Flag for semantic error
+extern int syntax_error_flag; 		// Flag for syntax error
+
+int param_scope_on = 0; 			// Scope init indicator for function declaration
+
+#define CLEAR_PARAM { for(int i=0;i<MAX_ATTRI;i++) { attributes_buf[i] = '\0'; } }
+
 /* Symbol table function - you can add new function if needed. */
 int lookup_symbol(const char*,const int,const int);
 void create_symbol();
-void insert_symbol(const char* name, const char* entry_type, 
-                  const char* data_type, const char* attributes, 
-                  const int prev, const int defined);
-void dump_symbol();
+void insert_symbol(const char*,const char*,const char*,const char*,const int,const int);
+void dump_symbol(int);
 void display_dump();
 void check_symbol(const char*, int);
 
@@ -92,41 +101,38 @@ void check_symbol(const char*, int);
 #include "y.tab.h"
 #include <string.h>
 
-#define MAX_NAME 32
-#define MAX_ATTRI 32
-#define NIL (void*)-1
-
-char attributes_buf[MAX_ATTRI] = {'\0'};
-
+// Structure for nodes in symbol tables
 struct symbol_node{
-    char name[MAX_NAME];
-    char entry_type[12];
-    char data_type[10];
-    int level;
-    char attributes[MAX_ATTRI];
-    int defined;
-    struct symbol_node * next;
+	char name[MAX_NAME];            // Symbol name
+	char entry_type[12];            // Symbol Entry Type ("parameter", "function", "variable")
+	char data_type[10];             // Symbol Data Type ("string", "int", "float", "void")
+	int level;                      // Level in symbol table
+	char attributes[MAX_ATTRI];     // Attribute list (For function)
+	int defined;                    // Check if this symbol is defined (Mainly for function forward declaration)
+	struct symbol_node * next;      // Pointer to next node
 };
 
 typedef struct symbol_node sym_node;
 typedef struct symbol_node * sym_node_ptr;
 
+// Structure for each symbol table
 struct symbol_table{
-    struct symbol_table * next;
-    int level;
-    sym_node_ptr first;
+	struct symbol_table * next;		// Pointer to next symbol table
+	int level;						// Level of the symbol table
+	sym_node_ptr first;				// Pointer to first symbol of symbol table
 };
 
 typedef struct symbol_table sym_tab;
 typedef struct symbol_table * sym_tab_ptr;
 
-sym_tab_ptr SYM_TAB = NIL;
-sym_tab_ptr DUMP_SYM = NIL;
-int level = 0;
+sym_tab_ptr SYM_TAB = NIL;			// Symbol Table Head (For the most recent symbol table)
+sym_tab_ptr DUMP_SYM = NIL;			// Indicate which symbol table to dump
+
+int level = 0;						// Global level (Most recent)
 
 void yyerror(char*);
 
-#line 130 "y.tab.c" /* yacc.c:339  */
+#line 136 "y.tab.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -264,13 +270,13 @@ extern int yydebug;
 
 union YYSTYPE
 {
-#line 69 "compiler_hw2.y" /* yacc.c:355  */
+#line 73 "compiler_hw2.y" /* yacc.c:355  */
 
-    int i_val;
-    double f_val;
-    char* string;
+	int i_val;
+	double f_val;
+	char* string;
 
-#line 274 "y.tab.c" /* yacc.c:355  */
+#line 280 "y.tab.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -287,7 +293,7 @@ int yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 291 "y.tab.c" /* yacc.c:358  */
+#line 297 "y.tab.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -589,15 +595,15 @@ static const yytype_uint8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   115,   115,   116,   120,   121,   125,   126,   130,   131,
-     135,   136,   137,   138,   139,   143,   159,   159,   174,   175,
-     179,   180,   184,   203,   208,   208,   215,   219,   220,   224,
-     225,   228,   229,   230,   231,   232,   233,   237,   238,   242,
-     245,   246,   249,   250,   253,   256,   257,   260,   261,   262,
-     263,   264,   265,   266,   267,   268,   269,   270,   271,   272,
-     273,   274,   275,   276,   277,   278,   279,   280,   281,   282,
-     283,   284,   285,   286,   287,   288,   289,   290,   291,   295,
-     296,   300,   301
+       0,   119,   119,   120,   124,   125,   129,   130,   134,   135,
+     139,   140,   141,   142,   143,   147,   157,   157,   169,   170,
+     174,   175,   179,   198,   203,   203,   207,   211,   212,   216,
+     217,   220,   221,   222,   223,   224,   225,   229,   230,   234,
+     237,   238,   241,   242,   245,   248,   249,   252,   253,   254,
+     255,   256,   257,   258,   259,   260,   261,   262,   263,   264,
+     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
+     275,   276,   277,   278,   279,   280,   281,   282,   283,   287,
+     288,   292,   293
 };
 #endif
 
@@ -1512,167 +1518,155 @@ yyreduce:
   switch (yyn)
     {
         case 3:
-#line 116 "compiler_hw2.y" /* yacc.c:1646  */
+#line 120 "compiler_hw2.y" /* yacc.c:1646  */
     { syntax_error_flag = 1; }
-#line 1518 "y.tab.c" /* yacc.c:1646  */
-    break;
-
-  case 8:
-#line 130 "compiler_hw2.y" /* yacc.c:1646  */
-    { insert_symbol((yyvsp[-1].string), "variable", (yyvsp[-2].string), "", 0, 1); }
 #line 1524 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 9:
-#line 131 "compiler_hw2.y" /* yacc.c:1646  */
-    { insert_symbol((yyvsp[-3].string), "variable", (yyvsp[-4].string), "", 0, 1); }
+  case 8:
+#line 134 "compiler_hw2.y" /* yacc.c:1646  */
+    { insert_symbol((yyvsp[-1].string), "variable", (yyvsp[-2].string), "", 0, 1); }
 #line 1530 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 15:
-#line 143 "compiler_hw2.y" /* yacc.c:1646  */
-    { 
+  case 9:
+#line 135 "compiler_hw2.y" /* yacc.c:1646  */
+    { insert_symbol((yyvsp[-3].string), "variable", (yyvsp[-4].string), "", 0, 1); }
+#line 1536 "y.tab.c" /* yacc.c:1646  */
+    break;
 
-                                    // Function forward decl
-                                    // Should not print anything
-                                    // Close scope
-                                    param_scope_on=0;  
-                                    dump_symbol(); 
-                                    level--;
-                                    
-                                    insert_symbol((yyvsp[-4].string), "function", (yyvsp[-5].string), attributes_buf, 0, 0); 
-                                
-                                    // Clear the param list
-                                    for(int i=0;i<MAX_ATTRI;i++){
-                                        attributes_buf[i] = '\0';
-                                    } 
-                                }
+  case 15:
+#line 147 "compiler_hw2.y" /* yacc.c:1646  */
+    { 
+												// Function forward decl
+												// Close scope
+												param_scope_on=0;
+												// Do not print  
+												dump_symbol(0); 
+												// Insert to current level
+												insert_symbol((yyvsp[-4].string), "function", (yyvsp[-5].string), attributes_buf, 0, 0); 
+												CLEAR_PARAM
+											}
 #line 1551 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 159 "compiler_hw2.y" /* yacc.c:1646  */
+#line 157 "compiler_hw2.y" /* yacc.c:1646  */
     {
-                                        if(param_scope_on == 0){ level++; create_symbol(); }
-                                        param_scope_on=0;
-
-                                        insert_symbol((yyvsp[-4].string), "function", (yyvsp[-5].string), attributes_buf, 1, 1); 
-
-                                        // Clear the param list
-                                        for(int i=0;i<MAX_ATTRI;i++){
-                                            attributes_buf[i] = '\0';
-                                        }
-                                    }
-#line 1567 "y.tab.c" /* yacc.c:1646  */
+										// If there are no scope, create scope
+										if(param_scope_on == 0){ create_symbol(); }
+										param_scope_on=0;
+										// Insert to prev level
+										insert_symbol((yyvsp[-4].string), "function", (yyvsp[-5].string), attributes_buf, 1, 1); 
+										CLEAR_PARAM
+									}
+#line 1564 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 19:
-#line 175 "compiler_hw2.y" /* yacc.c:1646  */
+#line 170 "compiler_hw2.y" /* yacc.c:1646  */
     { strcat(attributes_buf, "void"); }
-#line 1573 "y.tab.c" /* yacc.c:1646  */
+#line 1570 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 184 "compiler_hw2.y" /* yacc.c:1646  */
+#line 179 "compiler_hw2.y" /* yacc.c:1646  */
     {    
-                        // If the scope is not on, create a new scope, set the flag
-                        if(param_scope_on == 0){
-                            level++;
-                            create_symbol();
-                            param_scope_on = 1;
-                        }
+						// If the scope is not on, create a new scope, set the flag
+						if(param_scope_on == 0){
+							create_symbol();
+							param_scope_on = 1;
+						}
 
-                        // Insert symbol to the present scope
-                        insert_symbol((yyvsp[0].string), "parameter", (yyvsp[-1].string), "", 0, 1);
-                        
-                        if(attributes_buf[0] == '\0'){
-                            strcat(attributes_buf, (yyvsp[-1].string));
-                        }
-                        else{
-                            strcat(attributes_buf, ", ");
-                            strcat(attributes_buf, (yyvsp[-1].string));
-                        }
-                    }
-#line 1597 "y.tab.c" /* yacc.c:1646  */
+						// Insert symbol to the present scope
+						insert_symbol((yyvsp[0].string), "parameter", (yyvsp[-1].string), "", 0, 1);
+						
+						// Concat types to attribute list
+						if(attributes_buf[0] == '\0'){
+							strcat(attributes_buf, (yyvsp[-1].string));
+						}
+						else{
+							strcat(attributes_buf, ", ");
+							strcat(attributes_buf, (yyvsp[-1].string));
+						}
+					}
+#line 1594 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 24:
-#line 208 "compiler_hw2.y" /* yacc.c:1646  */
-    { 
-            level++; 
-            create_symbol(); 
-          }
-#line 1606 "y.tab.c" /* yacc.c:1646  */
+#line 203 "compiler_hw2.y" /* yacc.c:1646  */
+    { create_symbol(); }
+#line 1600 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 25:
-#line 211 "compiler_hw2.y" /* yacc.c:1646  */
-    { dump_symbol(); level--; }
-#line 1612 "y.tab.c" /* yacc.c:1646  */
+#line 203 "compiler_hw2.y" /* yacc.c:1646  */
+    { dump_symbol(1); }
+#line 1606 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 26:
-#line 215 "compiler_hw2.y" /* yacc.c:1646  */
-    { dump_symbol(); level--; param_scope_on=0;}
-#line 1618 "y.tab.c" /* yacc.c:1646  */
+#line 207 "compiler_hw2.y" /* yacc.c:1646  */
+    { dump_symbol(1); }
+#line 1612 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 37:
-#line 237 "compiler_hw2.y" /* yacc.c:1646  */
+#line 229 "compiler_hw2.y" /* yacc.c:1646  */
     { check_symbol((yyvsp[-1].string), 0); }
-#line 1624 "y.tab.c" /* yacc.c:1646  */
+#line 1618 "y.tab.c" /* yacc.c:1646  */
     break;
 
   case 47:
-#line 260 "compiler_hw2.y" /* yacc.c:1646  */
+#line 252 "compiler_hw2.y" /* yacc.c:1646  */
+    { check_symbol((yyvsp[-2].string), 0); }
+#line 1624 "y.tab.c" /* yacc.c:1646  */
+    break;
+
+  case 48:
+#line 253 "compiler_hw2.y" /* yacc.c:1646  */
     { check_symbol((yyvsp[-2].string), 0); }
 #line 1630 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 48:
-#line 261 "compiler_hw2.y" /* yacc.c:1646  */
+  case 49:
+#line 254 "compiler_hw2.y" /* yacc.c:1646  */
     { check_symbol((yyvsp[-2].string), 0); }
 #line 1636 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 49:
-#line 262 "compiler_hw2.y" /* yacc.c:1646  */
+  case 50:
+#line 255 "compiler_hw2.y" /* yacc.c:1646  */
     { check_symbol((yyvsp[-2].string), 0); }
 #line 1642 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 50:
-#line 263 "compiler_hw2.y" /* yacc.c:1646  */
+  case 51:
+#line 256 "compiler_hw2.y" /* yacc.c:1646  */
     { check_symbol((yyvsp[-2].string), 0); }
 #line 1648 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 51:
-#line 264 "compiler_hw2.y" /* yacc.c:1646  */
+  case 52:
+#line 257 "compiler_hw2.y" /* yacc.c:1646  */
     { check_symbol((yyvsp[-2].string), 0); }
 #line 1654 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 52:
-#line 265 "compiler_hw2.y" /* yacc.c:1646  */
-    { check_symbol((yyvsp[-2].string), 0); }
+  case 70:
+#line 275 "compiler_hw2.y" /* yacc.c:1646  */
+    { check_symbol((yyvsp[0].string), 0); }
 #line 1660 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 70:
-#line 283 "compiler_hw2.y" /* yacc.c:1646  */
-    { check_symbol((yyvsp[0].string), 0); }
+  case 71:
+#line 276 "compiler_hw2.y" /* yacc.c:1646  */
+    { check_symbol((yyvsp[-3].string), 1); }
 #line 1666 "y.tab.c" /* yacc.c:1646  */
     break;
 
-  case 71:
-#line 284 "compiler_hw2.y" /* yacc.c:1646  */
-    { check_symbol((yyvsp[-3].string), 1); }
-#line 1672 "y.tab.c" /* yacc.c:1646  */
-    break;
 
-
-#line 1676 "y.tab.c" /* yacc.c:1646  */
+#line 1670 "y.tab.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1900,234 +1894,243 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 305 "compiler_hw2.y" /* yacc.c:1906  */
+#line 297 "compiler_hw2.y" /* yacc.c:1906  */
 
 
 /* C code section */
 int main(int argc, char** argv)
 {
-    create_symbol();
-    yylineno = 0;
-    yyparse();
+	level=-1;
+	create_symbol();
+	yylineno = 0;
+	yyparse();
 	
-    if(!syntax_error_flag){
-        dump_symbol();
-        display_dump();
+	if(!syntax_error_flag){
+		dump_symbol(1);
+		display_dump();
 
-        printf("\nTotal lines: %d \n",yylineno);
-    }
-    
-    return 0;
+		printf("\nTotal lines: %d \n",yylineno);
+	}
+	
+	return 0;
 }
 
 void yyerror(char *s)
 {
 
-    if(!strcmp(s, "syntax error")){
-        syntax_error_flag = 1;
-    }
-    else{
-        error_flag = 1;
-        strncpy(err_msg, s, strlen(s));
-    }
+	if(!strcmp(s, "syntax error")){
+		syntax_error_flag = 1;
+	}
+	else{
+		semantic_error_flag = 1;
+		strncpy(err_msg, s, strlen(s));
+	}
 
-    
-    
+	
+	
 }
 
 void create_symbol() {
 
-    sym_tab_ptr p = calloc(1, sizeof(sym_tab));
+	level++;
+	sym_tab_ptr p = calloc(1, sizeof(sym_tab));
 
-    if(SYM_TAB == NIL){
-        // Create a new symbol table as first table
+	if(SYM_TAB == NIL){
+		// Create a new symbol table as first table
 
-        // Initialize a symbol table 
-        p->next = NIL;
-        p->level = level;
-        p->first = NIL;
-        
+		// Initialize a symbol table 
+		p->next = NIL;
+		p->level = level;
+		p->first = NIL;
+		
 
-        // Assign as head
-        SYM_TAB = p;
-    }
-    else{
-        // Initialize a symbol table
-        p->next = SYM_TAB;
-        p->level = level;
-        p->first = NIL;
+		// Assign as head
+		SYM_TAB = p;
+	}
+	else{
+		// Initialize a symbol table
+		p->next = SYM_TAB;
+		p->level = level;
+		p->first = NIL;
 
 
-        // Add to head of symbol tables
-        SYM_TAB = p;
-    }
+		// Add to head of symbol tables
+		SYM_TAB = p;
+	}
 
-    //printf("Create symbol table of level: %d\n", p->level);
+	//printf("Create symbol table of level: %d\n", p->level);
 }
 void insert_symbol(const char* name, const char* entry_type, 
-                  const char* data_type, const char* attributes, 
-                  const int prev, const int defined) {
-    
-    int ret;
-    if(!strcmp(entry_type, "function")){
-        ret = lookup_symbol(name, level-prev, 1);
-    }
-    else{
-        ret = lookup_symbol(name, level-prev, 0);
-    }
-    if(ret == 0){
-        //printf("Inserting symbol / %s / %s / %s / %s /\n", name, entry_type, data_type, attributes);
-        sym_node_ptr p = calloc(1, sizeof(sym_node));
+				  const char* data_type, const char* attributes, 
+				  const int prev, const int defined) {
+	
+	int ret;
+	if(!strcmp(entry_type, "function")){
+		ret = lookup_symbol(name, level-prev, 1);
+	}
+	else{
+		ret = lookup_symbol(name, level-prev, 0);
+	}
+	if(ret == 0){
+		//printf("Inserting symbol / %s / %s / %s / %s /\n", name, entry_type, data_type, attributes);
+		sym_node_ptr p = calloc(1, sizeof(sym_node));
 
-        strncpy(p->name, name, MAX_NAME-1);
-        strncpy(p->entry_type, entry_type, 11);
-        strncpy(p->data_type, data_type, 9);
-        p->level = level - prev;
-        p->defined = defined;
-        strncpy(p->attributes, attributes, MAX_ATTRI-1);
+		strncpy(p->name, name, MAX_NAME-1);
+		strncpy(p->entry_type, entry_type, 11);
+		strncpy(p->data_type, data_type, 9);
+		p->level = level - prev;
+		p->defined = defined;
+		strncpy(p->attributes, attributes, MAX_ATTRI-1);
 
-        p->next = NIL;
-        int prev_level = prev;
-        sym_tab_ptr tab = SYM_TAB;
-        while(prev_level){
-            tab = tab->next;
-            prev_level --;
-        }
-        sym_node_ptr pos = tab->first;
+		p->next = NIL;
+		int prev_level = prev;
+		sym_tab_ptr tab = SYM_TAB;
+		while(prev_level){
+			tab = tab->next;
+			prev_level --;
+		}
+		sym_node_ptr pos = tab->first;
 
-        // Originally empty
-        if(pos == NIL){
-            tab->first = p;
-        }
+		// Originally empty
+		if(pos == NIL){
+			tab->first = p;
+		}
 
-        // Originally not empty
-        else{
-            while(pos->next != NIL){
-                pos = pos->next;
-            }
-            pos->next = p;
-        }
-    }
+		// Originally not empty
+		else{
+			while(pos->next != NIL){
+				pos = pos->next;
+			}
+			pos->next = p;
+		}
+	}
 
-    // printf("Inserted symbol %s done\n", name);
+	// printf("Inserted symbol %s done\n", name);
 }
 
 // Used for checking undecleared 
 void check_symbol(const char* name, int is_function){
 
-    int found = 0;
-    sym_tab_ptr cur = SYM_TAB;
-    while(cur != NIL){
-        //printf("Lookup %d level...\n", cur->level);
-        sym_node_ptr p = cur->first;
-        while( p != NIL){
-            if(!strcmp(name, p->name)){
-                found = 1;
-            }
-            p = p->next;
-        }
+	int found = 0;
+	sym_tab_ptr cur = SYM_TAB;
+	while(cur != NIL){
+		//printf("Lookup %d level...\n", cur->level);
+		sym_node_ptr p = cur->first;
+		while( p != NIL){
+			if(!strcmp(name, p->name)){
+				found = 1;
+			}
+			p = p->next;
+		}
 
-        cur = cur->next;
-    }
-    if(!found){
-        char msg[128] = {'\0'};
-        if(!is_function){
-            sprintf(msg, "Undeclared variable %s", name);
-        }
-        else{
-            sprintf(msg, "Undeclared function %s", name);
-        }
-        yyerror(msg);
-    }
+		cur = cur->next;
+	}
+	if(!found){
+		char msg[128] = {'\0'};
+		if(!is_function){
+			sprintf(msg, "Undeclared variable %s", name);
+		}
+		else{
+			sprintf(msg, "Undeclared function %s", name);
+		}
+		yyerror(msg);
+	}
 
 }
 
 
 // Used for checking redeclared
 int lookup_symbol(const char* name, const int lvl, const int is_function) {
-    // Return 0 if symbol not found
-    // Return 1 if symbol found
-    // Return 2 if function forward defined
+	/* 
+	 *Return 0 if symbol not found
+	 * Return 1 if symbol found
+	 * Return 2 if function forward defined
+	 */
+	sym_tab_ptr cur = SYM_TAB;
+	while(cur != NIL){
+		//printf("Lookup %d level...\n", cur->level);
+		sym_node_ptr p = cur->first;
+		while( p != NIL){
+			if(!strcmp(name, p->name) && lvl==p->level){
+				char msg[128] = {'\0'};
+				if(!is_function){
+					sprintf(msg, "Redeclared variable %s", name);
+				}
+				else{
+					// If forward decl
+					if(p->defined == 0){
+						p->defined = 1;
+						return 2;
+					}
+					else{
+						sprintf(msg, "Redeclared function %s", name);
+					}
+				}
+				
+				yyerror(msg);
+				return 1;
+			}
+			p = p->next;
+		}
 
-    sym_tab_ptr cur = SYM_TAB;
-    while(cur != NIL){
-        //printf("Lookup %d level...\n", cur->level);
-        sym_node_ptr p = cur->first;
-        while( p != NIL){
-            if(!strcmp(name, p->name) && lvl==p->level){
-                char msg[128] = {'\0'};
-                if(!is_function){
-                    sprintf(msg, "Redeclared variable %s", name);
-                }
-                else{
-                    // If forward decl
-                    if(p->defined == 0){
-                        p->defined = 1;
-                        return 2;
-                    }
-                    else{
-                        sprintf(msg, "Redeclared function %s", name);
-                    }
-                }
-                
-                yyerror(msg);
-                return 1;
-            }
-            p = p->next;
-        }
-
-        cur = cur->next;
-    }
-    return 0;
+		cur = cur->next;
+	}
+	return 0;
 }
-void dump_symbol() {
+void dump_symbol(int display) {
+	/*
+	 * display = 0 : Do not raise dump_flag
+	 */
 
-    //printf("\n Dumping symbol table of level: %d\n", SYM_TAB->level);
+	//printf("\n Dumping symbol table of level: %d\n", SYM_TAB->level);
 
-    // Symbol table from head
-    DUMP_SYM = SYM_TAB;    
-    dump_flag = 1;
-    // Remove symbol table from head
-    SYM_TAB = SYM_TAB->next;
+	// Symbol table from head
+	DUMP_SYM = SYM_TAB; 
+	if(display){
+		dump_flag = 1;
+	}   
+	// Remove symbol table from head
+	SYM_TAB = SYM_TAB->next;
 
+	level--;
 }
 
 void display_dump(){
-    sym_node_ptr p = DUMP_SYM->first;
-    if(p == NIL){
-        // printf("Empty symbol table!\n");
-    }
+	sym_node_ptr p = DUMP_SYM->first;
+	if(p == NIL){
+		// printf("Empty symbol table!\n");
+	}
 
-    else{
-        printf("\n%-10s%-10s%-12s%-10s%-10s%-10s\n\n",
-           "Index", "Name", "Kind", "Type", "Scope", "Attribute");
-        int index = 0;
-        while(p != NIL){
-            printf("%-10d%-10s%-12s%-10s%-10d",
-                    index,
-                    p->name,
-                    p->entry_type,
-                    p->data_type,
-                    p->level);
+	else{
+		printf("\n%-10s%-10s%-12s%-10s%-10s%-10s\n\n",
+		   "Index", "Name", "Kind", "Type", "Scope", "Attribute");
+		int index = 0;
+		while(p != NIL){
+			printf("%-10d%-10s%-12s%-10s%-10d",
+					index,
+					p->name,
+					p->entry_type,
+					p->data_type,
+					p->level);
 
-            if(!strcmp(p->attributes,"")){
-                printf("\n");
-            }
-            else{
-                printf("%s\n", p->attributes);
-            }
-            sym_node_ptr del_node = p;
-            p = p->next;
+			if(!strcmp(p->attributes,"")){
+				printf("\n");
+			}
+			else{
+				printf("%s\n", p->attributes);
+			}
+			sym_node_ptr del_node = p;
+			p = p->next;
 
-            // Free each symbol node
-            free(del_node);
-            index ++; 
-        }
+			// Free each symbol node
+			free(del_node);
+			index ++; 
+		}
 
-        printf("\n");
-    }
+		printf("\n");
+	}
 
-    free(DUMP_SYM);
-    DUMP_SYM = NIL;
-    dump_flag = 0;
+	free(DUMP_SYM);
+	DUMP_SYM = NIL;
+	dump_flag = 0;
 }
