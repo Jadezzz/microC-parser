@@ -8,7 +8,7 @@ extern char* yytext;   // Get current token from lex
 extern char buf[BUF_SIZE];  // Get current code line from lex
 extern int dump_flag;
 extern int error_flag;
-int syntax_error_flag = 0;
+extern int syntax_error_flag;
 int param_scope_on = 0;
 
 
@@ -112,7 +112,8 @@ void yyerror(char*);
 %%
 
 program
-    : decl_list
+    : decl_list 
+    | error { syntax_error_flag = 1; }
     ;
 
 decl_list
@@ -189,7 +190,7 @@ param
                         }
 
                         // Insert symbol to the present scope
-                        insert_symbol($2, "parameter", $1, "", 0);
+                        insert_symbol($2, "parameter", $1, "", 0, 1);
                         
                         if(attributes_buf[0] == '\0'){
                             strcat(attributes_buf, $1);
@@ -322,30 +323,16 @@ int main(int argc, char** argv)
 
 void yyerror(char *s)
 {
+
     if(!strcmp(s, "syntax error")){
-
-        printf("%d: %s\n", yylineno + 1, buf); 
-
-        if(err_msg[0] != '\0'){
-            printf("\n|-----------------------------------------------|\n");
-            printf("| Error found in line %d: %s\n", yylineno + 1, buf);
-            printf("| %s", err_msg);
-            printf("\n|-----------------------------------------------|\n\n");
-            error_flag = 0;
-        }
-        
-        
-        printf("\n|-----------------------------------------------|\n");
-        printf("| Error found in line %d: %s\n", yylineno + 1, buf);
-        printf("| %s", s);
-        printf("\n|-----------------------------------------------|\n\n");
-
         syntax_error_flag = 1;
     }
     else{
-        strncpy(err_msg, s, strlen(s));
         error_flag = 1;
+        strncpy(err_msg, s, strlen(s));
     }
+
+    
     
 }
 
@@ -389,7 +376,7 @@ void insert_symbol(const char* name, const char* entry_type,
     else{
         ret = lookup_symbol(name, level-prev, 0);
     }
-    if(!ret){
+    if(ret == 0){
         //printf("Inserting symbol / %s / %s / %s / %s /\n", name, entry_type, data_type, attributes);
         sym_node_ptr p = calloc(1, sizeof(sym_node));
 
@@ -461,6 +448,7 @@ void check_symbol(const char* name, int is_function){
 int lookup_symbol(const char* name, const int lvl, const int is_function) {
     // Return 0 if symbol not found
     // Return 1 if symbol found
+    // Return 2 if function forward defined
 
     sym_tab_ptr cur = SYM_TAB;
     while(cur != NIL){
@@ -475,7 +463,8 @@ int lookup_symbol(const char* name, const int lvl, const int is_function) {
                 else{
                     // If forward decl
                     if(p->defined == 0){
-                        return 0;
+                        p->defined = 1;
+                        return 2;
                     }
                     else{
                         sprintf(msg, "Redeclared function %s", name);

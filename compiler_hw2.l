@@ -15,7 +15,7 @@ char buf[BUF_SIZE];
 char string_buf[BUF_SIZE];
 int dump_flag=0;
 int error_flag=0;
-
+int syntax_error_flag=0;
 
 /* This macro is used to record code line */
 #define CONCAT { strncat(buf, yytext, BUF_SIZE - strlen(buf) - 1); }
@@ -161,6 +161,17 @@ id			{letter}+({letter}|{digit})*
                   printf("\n|-----------------------------------------------|\n\n");
                   error_flag = 0;
                   memset(err_msg, '\0', BUF_SIZE);
+              }
+
+              if(syntax_error_flag){
+                  printf("\n|-----------------------------------------------|\n");
+                  printf("| Error found in line %d: %s\n", yylineno, buf);
+                  printf("| syntax error");
+                  printf("\n|-----------------------------------------------|\n\n");
+                  error_flag = 0;
+                  memset(err_msg, '\0', BUF_SIZE);
+
+                  exit(1);
               }
 
               memset(buf, '\0', BUF_SIZE); 
