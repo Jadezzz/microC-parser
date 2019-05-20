@@ -143,39 +143,39 @@ id			{letter}+({letter}|{digit})*
 
 [;]         { CONCAT return(SEMICOLON); }
 [\n]        {   
-              if(buf[0] == '\0'){
-                printf("%d:\n", yylineno);
-              }
-              else{
-                printf("%d: %s\n", yylineno, buf);
-              }
+                if(buf[0] == '\0'){
+                    printf("%d:\n", yylineno);
+                }
+                else{
+                    printf("%d: %s\n", yylineno, buf);
+                }
               
-			        if(dump_flag){
-				        display_dump();
-			        }	
+			    if(dump_flag){
+				    display_dump();
+			    }	
 
-              if(semantic_error_flag) {
-                  printf("\n|-----------------------------------------------|\n");
-                  printf("| Error found in line %d: %s\n", yylineno, buf);
-                  printf("| %s", err_msg);
-                  printf("\n|-----------------------------------------------|\n\n");
-                  semantic_error_flag = 0;
-                  memset(err_msg, '\0', BUF_SIZE);
-              }
+                if(semantic_error_flag) {
+                    printf("\n|-----------------------------------------------|\n");
+                    printf("| Error found in line %d: %s\n", yylineno, buf);
+                    printf("| %s", err_msg);
+                    printf("\n|-----------------------------------------------|\n\n");
+                    semantic_error_flag = 0;
+                    memset(err_msg, '\0', BUF_SIZE);
+                }
 
-              if(syntax_error_flag){
-                  printf("\n|-----------------------------------------------|\n");
-                  printf("| Error found in line %d: %s\n", yylineno, buf);
-                  printf("| syntax error");
-                  printf("\n|-----------------------------------------------|\n\n");
-                  syntax_error_flag = 0;
-                  memset(err_msg, '\0', BUF_SIZE);
+                if(syntax_error_flag){
+                    printf("\n|-----------------------------------------------|\n");
+                    printf("| Error found in line %d: %s\n", yylineno, buf);
+                    printf("| syntax error");
+                    printf("\n|-----------------------------------------------|\n\n");
+                    syntax_error_flag = 0;
+                    memset(err_msg, '\0', BUF_SIZE);
 
-                  exit(1);
-              }
+                    exit(1);
+                }
 
-              memset(buf, '\0', BUF_SIZE); 
-			      }
+                memset(buf, '\0', BUF_SIZE); 
+			}
 [ \t]		{ CONCAT } /* Ignore */
 [^ \t\n] 	{ CONCAT } /* Ignore other charactor sets */
  /* <<EOF>>     {  } */

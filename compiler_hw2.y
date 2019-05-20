@@ -234,15 +234,18 @@ while_stmt
 	: WHILE LB expr RB stmt
 
 if_stmt
-	: IF LB expr RB compound_stmt
-	| IF LB expr RB compound_stmt else_if_stmt
+	: IF LB expr RB compound_stmt else_if_stmt else_stmt
+	;
 
 else_if_stmt
-	: ELSE IF LB expr RB compound_stmt else_if_stmt
-	| else_stmt
+	: else_if_stmt ELSE IF LB expr RB compound_stmt 
+	|
+	;
 
 else_stmt
 	: ELSE compound_stmt
+	|
+	;
 
 return_stmt
 	: RET SEMICOLON
