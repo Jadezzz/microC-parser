@@ -25,7 +25,7 @@ int param_scope_on = 0; 			// Scope init indicator for function declaration
 #define CLEAR_PARAM { for(int i=0;i<MAX_ATTRI;i++) { attributes_buf[i] = '\0'; } }
 
 /* Symbol table function - you can add new function if needed. */
-int lookup_symbol(const char*,const int,const int);
+int lookup_symbol(const char*,const int,const int, const int);
 void create_symbol();
 void insert_symbol(const char*,const char*,const char*,const char*,const int,const int);
 void dump_symbol(int);
@@ -44,7 +44,7 @@ struct symbol_node{
 	char data_type[10];             // Symbol Data Type ("string", "int", "float", "void")
 	int level;                      // Level in symbol table
 	char attributes[MAX_ATTRI];     // Attribute list (For function)
-	int defined;                    // Check if this symbol is defined (Mainly for function forward declaration)
+	int func_decl;                  // Check if this symbol is function declaration
 	struct symbol_node * next;      // Pointer to next node
 };
 
@@ -131,8 +131,8 @@ decl
 	;
 
 var_decl
-	: type_spec ID SEMICOLON { insert_symbol($2, "variable", $1, "", 0, 1); }
-	| type_spec ID ASGN expr SEMICOLON { insert_symbol($2, "variable", $1, "", 0, 1); }
+	: type_spec ID SEMICOLON { insert_symbol($2, "variable", $1, "", 0, 0); }
+	| type_spec ID ASGN expr SEMICOLON { insert_symbol($2, "variable", $1, "", 0, 0); }
 	;
 
 type_spec
@@ -145,13 +145,15 @@ type_spec
 
 fun_decl
 	: type_spec ID LB params RB SEMICOLON 	{ 
-												// Function forward decl
-												// Close scope
-												param_scope_on=0;
-												// Do not print  
-												dump_symbol(0); 
+												// Function decl
+												if(param_scope_on){
+													// Close scope
+													param_scope_on=0;
+													// Do not print  
+													dump_symbol(0); 
+												}	
 												// Insert to current level
-												insert_symbol($2, "function", $1, attributes_buf, 0, 0); 
+												insert_symbol($2, "function", $1, attributes_buf, 0, 1); 
 												CLEAR_PARAM
 											} 
 	| type_spec ID LB params RB LCB {
@@ -159,7 +161,7 @@ fun_decl
 										if(param_scope_on == 0){ create_symbol(); }
 										param_scope_on=0;
 										// Insert to prev level
-										insert_symbol($2, "function", $1, attributes_buf, 1, 1); 
+										insert_symbol($2, "function", $1, attributes_buf, 1, 0); 
 										CLEAR_PARAM
 									} function_compound_stmt
 	;
@@ -184,7 +186,7 @@ param
 						}
 
 						// Insert symbol to the present scope
-						insert_symbol($2, "parameter", $1, "", 0, 1);
+						insert_symbol($2, "parameter", $1, "", 0, 0);
 						
 						// Concat types to attribute list
 						if(attributes_buf[0] == '\0'){
@@ -360,14 +362,14 @@ void create_symbol() {
 }
 void insert_symbol(const char* name, const char* entry_type, 
 				  const char* data_type, const char* attributes, 
-				  const int prev, const int defined) {
+				  const int prev, const int func_decl) {
 	
 	int ret;
 	if(!strcmp(entry_type, "function")){
-		ret = lookup_symbol(name, level-prev, 1);
+		ret = lookup_symbol(name, level-prev, 1, func_decl);
 	}
 	else{
-		ret = lookup_symbol(name, level-prev, 0);
+		ret = lookup_symbol(name, level-prev, 0, func_decl);
 	}
 	if(ret == 0){
 		//printf("Inserting symbol / %s / %s / %s / %s /\n", name, entry_type, data_type, attributes);
@@ -377,7 +379,7 @@ void insert_symbol(const char* name, const char* entry_type,
 		strncpy(p->entry_type, entry_type, 11);
 		strncpy(p->data_type, data_type, 9);
 		p->level = level - prev;
-		p->defined = defined;
+		p->func_decl = func_decl;
 		strncpy(p->attributes, attributes, MAX_ATTRI-1);
 
 		p->next = NIL;
@@ -436,11 +438,13 @@ void check_symbol(const char* name, int is_function){
 
 
 // Used for checking redeclared
-int lookup_symbol(const char* name, const int lvl, const int is_function) {
+int lookup_symbol(const char* name, const int lvl, const int is_function, const int func_decl) {
 	/* 
-	 *Return 0 if symbol not found
+	 * Return 0 if symbol not found
 	 * Return 1 if symbol found
-	 * Return 2 if function forward defined
+	 * Return 2 if function is declared
+	 * Return 3 if function is defined
+	 * Return 4 if function is changed to declared
 	 */
 	sym_tab_ptr cur = SYM_TAB;
 	while(cur != NIL){
@@ -453,13 +457,26 @@ int lookup_symbol(const char* name, const int lvl, const int is_function) {
 					sprintf(msg, "Redeclared variable %s", name);
 				}
 				else{
-					// If forward decl
-					if(p->defined == 0){
-						p->defined = 1;
-						return 2;
+					// redefinition
+					if(p->func_decl == 0 && (func_decl == 0)){
+						// Redefined, don't care!
+						return 3;
+					}
+					else if(p->func_decl == 1 && (func_decl == 1)){
+						// Redeclared! error!
+						sprintf(msg, "Redeclared function %s", name);
+					}
+					else if(p->func_decl == 0 && (func_decl == 1)){
+						// Defined and then declared 
+						p->func_decl = 1;
+						return 4;
+					}
+					else if(p->func_decl == 1 && (func_decl == 0)){
+						// Forward declaration, OK!
+						return 2; 
 					}
 					else{
-						sprintf(msg, "Redeclared function %s", name);
+						printf("Something strange happened!? \n");
 					}
 				}
 				
